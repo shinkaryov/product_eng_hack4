@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     gemini_router_model: str = "gemini-3.5-flash-lite"
 
     jwt_secret: str = "change-me"
+    # Comma-separated origins allowed to call the API from a browser (frontend dev servers).
+    cors_origins: str = "http://localhost:3000,http://localhost:5173"
 
     worker_poll_seconds: float = 2.0
     max_upload_mb: int = 20

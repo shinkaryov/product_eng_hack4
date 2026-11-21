@@ -4,36 +4,29 @@ from pathlib import Path
 from typing import Annotated, Literal
 from uuid import UUID, uuid4
 
-import pymupdf
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
+from vault.ai.policy import BLOCKED_TYPES
+from vault.ai.schemas import DocType
 from vault.config import get_settings
 from vault.families import membership
 from vault.local_auth import DB, User, query, required
 
 router = APIRouter(prefix="/v1/documents")
-Category = Literal[
-    "UTILITY_CONTRACT",
-    "UTILITY_BILL",
-    "RECEIPT",
-    "WARRANTY",
-    "INSURANCE",
-    "RENTAL_AGREEMENT",
-    "OTHER",
-]
+# User-selectable categories = AI document types except blacklisted ones (vault.ai.policy).
+Category = Literal[tuple(t.name for t in DocType if t not in BLOCKED_TYPES)]  # type: ignore[valid-type]
 Status = Literal["PENDING", "PROCESSING", "COMPLETED", "FAILED"]
 ACCESS = """(d.owner_id=:uid OR (d.policy_outcome='ALLOWED' AND d.result_revision>0 AND EXISTS (
     SELECT 1 FROM vault.document_shares s JOIN vault.family_members m ON m.id=s.membership_id
     JOIN vault.family_members o ON o.family_id=m.family_id AND o.user_id=d.owner_id
     WHERE s.document_id=d.id AND m.user_id=:uid)))"""
 SELECT_DOC = """SELECT d.*,j.status,j.error_code,j.started_at,j.finished_at,f.display_filename,f.media_type,f.size_bytes,
-    CASE WHEN j.status='PENDING' AND EXISTS (
-        SELECT 1 FROM vault.document_ocr o WHERE o.document_id=d.id
-    ) THEN 'AWAITING_SCREENING' ELSE j.status END AS processing_stage,
-    CASE WHEN d.policy_outcome='ALLOWED' THEN summary.summary END AS summary FROM vault.documents d
-    JOIN vault.processing_jobs j ON j.document_id=d.id JOIN vault.document_files f ON f.document_id=d.id
+    j.status AS processing_stage,
+    CASE WHEN d.policy_outcome='ALLOWED' THEN summary.summary END AS summary,
+    CASE WHEN d.policy_outcome='ALLOWED' THEN summary.card END AS summary_card FROM vault.documents d
+    JOIN vault.processing_jobs j ON j.document_id=d.id LEFT JOIN vault.document_files f ON f.document_id=d.id
     LEFT JOIN vault.document_summaries summary ON summary.document_id=d.id """
 
 
@@ -68,10 +61,6 @@ class Corrections(BaseModel):
     fields: dict
 
 
-class Reprocess(BaseModel):
-    language_hint: Literal["eng", "ces", "eng+ces"] | None = None
-
-
 class Share(BaseModel):
     family_id: UUID
 
@@ -86,21 +75,9 @@ def validate_file(data, name, mime):
     kind = types.get(Path(name).suffix.lower())
     if not kind or kind[0] != mime or not data.startswith(kind[1]):
         raise HTTPException(415, "File extension, media type or signature unsupported")
-    try:
-        with pymupdf.open(stream=data) as source:
-            if source.needs_pass or not 1 <= len(source) <= 50:
-                raise ValueError
-            for page in source:
-                if page.rect.is_empty or page.rect.get_area() * 4 > 24_000_000:
-                    raise ValueError
-            if mime != "application/pdf":
-                images = source[0].get_image_info()
-                if any(
-                    image["width"] * image["height"] > 24_000_000 for image in images
-                ):
-                    raise ValueError
-    except (RuntimeError, ValueError):
-        raise HTTPException(422, "Unreadable or oversized document")
+    # No local parsing: Gemini reads the file. Size is capped by MAX_UPLOAD_MB in upload().
+    if mime == "application/pdf" and b"/Encrypt" in data:
+        raise HTTPException(422, "Password-protected PDFs are not supported")
 
 
 @router.post("", status_code=202)
@@ -110,7 +87,6 @@ def upload(
     file: Annotated[UploadFile, File()],
     title: Annotated[str | None, Form(max_length=255)] = None,
     category: Annotated[Category | None, Form()] = None,
-    language_hint: Annotated[Literal["eng", "ces", "eng+ces"] | None, Form()] = None,
 ):
     limit = get_settings().max_upload_mb * 1024 * 1024
     data = file.file.read(limit + 1)
@@ -128,12 +104,11 @@ def upload(
             target.flush()
             id = query(
                 db,
-                """INSERT INTO vault.documents(owner_id,title,category,language_hint)
-                             VALUES (:uid,:title,:category,:lang) RETURNING id""",
+                """INSERT INTO vault.documents(owner_id,title,category)
+                             VALUES (:uid,:title,:category) RETURNING id""",
                 uid=user["id"],
                 title=(title or name).strip() or name,
                 category=category,
-                lang=language_hint,
             ).one()["id"]
             query(
                 db,
@@ -202,10 +177,12 @@ def get(id: UUID, db: DB, user: User):
 @router.get("/{id}/file")
 def download(id: UUID, db: DB, user: User):
     doc = document(db, user, id)
-    key = query(
+    row = query(
         db, "SELECT storage_key FROM vault.document_files WHERE document_id=:id", id=id
-    ).one()["storage_key"]
-    path = stored_path(key)
+    ).first()
+    if row is None:  # blocked documents keep no original
+        raise HTTPException(404, "File not stored")
+    path = stored_path(row["storage_key"])
     if not path.is_file():
         raise HTTPException(503, "File unavailable")
     return FileResponse(
@@ -244,17 +221,12 @@ def delete(id: UUID, db: DB, user: User):
 
 
 @router.post("/{id}/reprocess", status_code=202)
-def retry(id: UUID, db: DB, user: User, body: Reprocess | None = None):
+def retry(id: UUID, db: DB, user: User):
     doc = document(db, user, id, owner=True)
     if doc["status"] in ("PROCESSING", "PENDING"):
         raise HTTPException(409, "Processing already queued")
-    query(
-        db,
-        "UPDATE vault.documents SET language_hint=coalesce(:hint,language_hint) WHERE id=:id",
-        id=id,
-        hint=body.language_hint if body else None,
-    )
-    query(db, "DELETE FROM vault.document_ocr WHERE document_id=:id", id=id)
+    if doc["display_filename"] is None:
+        raise HTTPException(409, "Original file is not stored")
     query(
         db,
         """UPDATE vault.processing_jobs SET status='PENDING',available_at=now(),attempts=0,
@@ -274,6 +246,7 @@ def summary(id: UUID, db: DB, user: User):
     return {
         "document_id": id,
         "summary": doc["summary"],
+        "card": doc["summary_card"],
         "revision": doc["result_revision"],
     }
 

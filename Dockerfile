@@ -9,8 +9,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 COPY --from=ghcr.io/astral-sh/uv:0.5.11 /uv /usr/local/bin/uv
 
-RUN apt-get update && apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-ces && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app
 
 # Dependencies first, for layer caching

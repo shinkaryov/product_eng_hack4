@@ -7,7 +7,9 @@ from vault.ai.schemas import (
     Citation,
     Classification,
     DocType,
+    DocumentFact,
     Extraction,
+    MoneyFact,
     RouteDecision,
     SummaryCard,
 )
@@ -25,7 +27,10 @@ CARD = SummaryCard(
 
 
 def _extraction(expires_on: str | None = "2031-08-12", quote: str | None = "12 AUG 2031") -> Extraction:
-    return Extraction(full_text=PASSPORT_TEXT, expires_on=expires_on, expires_on_quote=quote, summary=CARD)
+    return Extraction(
+        full_text=PASSPORT_TEXT, identifiers=[], terms=[], financials=[],
+        expires_on=expires_on, expires_on_quote=quote, summary=CARD,
+    )
 
 
 def test_blacklisted_document_skips_extraction():
@@ -145,8 +150,60 @@ def test_summary_card_is_redacted_after_extraction():
     llm = FakeLLMClient(
         responses={
             Classification: Classification(doc_type=DocType.PASSPORT, confidence=0.95, reason="passport"),
-            Extraction: Extraction(full_text=PASSPORT_TEXT, expires_on="2031-08-12", expires_on_quote="12 AUG 2031", summary=leaky),
+            Extraction: _extraction().model_copy(update={"summary": leaky}),
         }
     )
     result = analyze_document(llm, b"img", "image/jpeg")
     assert result.extraction.summary.key_facts == ["Passport No. •••5678", "expires 12 AUG 2031"]
+
+
+POLICY_TEXT = """SAFEDRIVE MUTUAL INSURANCE
+Policy number: SDM-4471-209
+Policy period: 01/15/2026 to 07/15/2026
+Cancellation requires 30 days written notice.
+Six-month premium: $1,250.00
+Collision deductible: $500"""
+
+
+def test_facts_are_kept_only_when_supported_by_text():
+    extraction = Extraction(
+        full_text=POLICY_TEXT,
+        identifiers=[
+            DocumentFact(name="policy_number", value="SDM-4471-209", quote="Policy number: SDM-4471-209"),
+            DocumentFact(name="policy_number", value="SDM-4471-999", quote="Policy number: SDM-4471-209"),  # fabricated
+        ],
+        terms=[
+            DocumentFact(name="notice_period", value="30 days", quote="Cancellation requires 30 days written notice."),
+            DocumentFact(name="auto_renewal", value="yes", quote="Renews automatically"),  # not in text
+        ],
+        financials=[
+            MoneyFact(name="premium", amount="1,250.00", currency="USD", period="semiannual", quote="Six-month premium: $1,250.00"),
+            MoneyFact(name="collision_deductible", amount="5000", currency="USD", period=None, quote="Collision deductible: $500"),
+        ],
+        expires_on="2026-07-15",
+        expires_on_quote="07/15/2026",
+        summary=CARD,
+    )
+    llm = FakeLLMClient(
+        responses={
+            Classification: Classification(doc_type=DocType.AUTO_INSURANCE, confidence=0.95, reason="policy"),
+            Extraction: extraction,
+        }
+    )
+    result = analyze_document(llm, b"img", "application/pdf")
+    ext = result.extraction
+    assert [f.value for f in ext.identifiers] == ["SDM-4471-209"]
+    assert [f.name for f in ext.terms] == ["notice_period"]
+    assert [m.name for m in ext.financials] == ["premium"]
+    assert result.needs_review
+    assert any("dropped 3" in w for w in result.warnings)
+
+
+def test_parse_amount():
+    from decimal import Decimal
+
+    from vault.ai.analyze import parse_amount
+
+    assert parse_amount("1,250.00") == Decimal("1250.00")
+    assert parse_amount("$500") == Decimal("500")
+    assert parse_amount("n/a") is None

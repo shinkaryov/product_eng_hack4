@@ -1,12 +1,14 @@
 """Document analysis pipeline: classify (cheap model) -> policy -> extract (main model)."""
 
+import re
 from dataclasses import dataclass, field
 from datetime import date
+from decimal import Decimal, InvalidOperation
 
 from vault.ai import prompts
 from vault.ai.policy import block_reason
 from vault.ai.redact import redact_card
-from vault.ai.schemas import Classification, DocType, Extraction
+from vault.ai.schemas import Classification, DocType, DocumentFact, Extraction, MoneyFact
 from vault.ai.text import normalize_text
 from vault.llm import Attachment, LLMClient, ModelRole, UsageLog
 
@@ -67,7 +69,44 @@ def analyze_document(llm: LLMClient, data: bytes, mime_type: str) -> AnalysisRes
     result.expires_on = _validated_expiry(extraction, result.warnings)
     if extraction.expires_on and result.expires_on is None:
         result.needs_review = True
+
+    before = len(extraction.identifiers) + len(extraction.terms) + len(extraction.financials)
+    extraction.identifiers = [f for f in extraction.identifiers if _fact_ok(f, extraction.full_text, strict_value=True)]
+    extraction.terms = [f for f in extraction.terms if _fact_ok(f, extraction.full_text, strict_value=False)]
+    extraction.financials = [m for m in extraction.financials if _money_ok(m, extraction.full_text)]
+    dropped = before - (len(extraction.identifiers) + len(extraction.terms) + len(extraction.financials))
+    if dropped:
+        result.warnings.append(f"dropped {dropped} extracted facts not supported by document text")
+        result.needs_review = True
     return result
+
+
+def _quote_in_text(quote: str, full_text: str) -> bool:
+    quote = quote.strip()
+    return bool(quote) and normalize_text(quote) in normalize_text(full_text)
+
+
+def _fact_ok(fact: DocumentFact, full_text: str, *, strict_value: bool) -> bool:
+    """Quote must be in the text. Identifiers must also appear verbatim inside the quote (no fabrication)."""
+    if not _quote_in_text(fact.quote, full_text):
+        return False
+    return not strict_value or normalize_text(fact.value) in normalize_text(fact.quote)
+
+
+def _money_ok(money: MoneyFact, full_text: str) -> bool:
+    if not _quote_in_text(money.quote, full_text) or parse_amount(money.amount) is None:
+        return False
+    digits = re.sub(r"\D", "", money.amount)
+    return bool(digits) and digits in re.sub(r"\D", "", money.quote)
+
+
+def parse_amount(raw: str) -> Decimal | None:
+    """'1,250.00' -> Decimal('1250.00'). Assumes US formatting (comma thousands, dot decimals)."""
+    cleaned = re.sub(r"[^\d.\-]", "", raw.replace(",", ""))
+    try:
+        return Decimal(cleaned) if cleaned else None
+    except InvalidOperation:
+        return None
 
 
 def _validated_expiry(extraction: Extraction, warnings: list[str]) -> date | None:

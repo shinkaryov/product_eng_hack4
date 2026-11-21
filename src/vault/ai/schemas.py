@@ -69,8 +69,33 @@ class SummaryCard(BaseModel):
     topics: list[str] = Field(description="5-12 lowercase search keywords, e.g. 'deductible', 'auto-renewal'.")
 
 
+class DocumentFact(BaseModel):
+    name: str = Field(description="snake_case key, e.g. 'policy_number', 'notice_period', 'auto_renewal'.")
+    value: str = Field(description="Value exactly as written in the document.")
+    quote: str = Field(description="Exact substring of full_text that contains the value.")
+
+
+class MoneyFact(BaseModel):
+    name: str = Field(description="snake_case key, e.g. 'premium', 'collision_deductible', 'monthly_rent', 'total_due'.")
+    amount: str = Field(description="Amount exactly as written, without currency symbol, e.g. '1,250.00'.")
+    currency: str | None = Field(description="ISO 4217 code, e.g. 'USD'. Null if not stated.")
+    period: str | None = Field(description="'one_time', 'monthly', 'quarterly', 'semiannual', 'annual' or null if not stated.")
+    quote: str = Field(description="Exact substring of full_text that contains the amount.")
+
+
 class Extraction(BaseModel):
     full_text: str = Field(description="Complete document text as read (OCR), preserving line breaks.")
+    identifiers: list[DocumentFact] = Field(
+        description="Identifiers printed on the document: document, passport, license, policy, contract, account, "
+        "member, invoice numbers, VIN. Never invent or complete partial numbers.",
+    )
+    terms: list[DocumentFact] = Field(
+        description="Contract and validity terms: policy/contract period, notice period for cancellation, "
+        "auto-renewal, cancellation conditions, early termination, warranty duration, grace period, payment due rules.",
+    )
+    financials: list[MoneyFact] = Field(
+        description="Money amounts: premiums, rent, deductibles, coverage limits, fees, penalties, totals due.",
+    )
     expires_on: str | None = Field(
         description="Expiration / end-of-validity date as YYYY-MM-DD. Null if the document has none or it is unreadable.",
     )

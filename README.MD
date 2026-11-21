@@ -20,9 +20,9 @@ To start only PostgreSQL and its migration service, run `docker compose up -d --
 
 ## Database schema
 
-The initial Alembic revisions enable pgvector and create the `vault` schema. It contains accounts, family membership and grants, documents and processing jobs, summaries, deadlines and reminders, and document chatbot history. Revision `0003_local_ocr` adds private staging for locally extracted pages. The worker runs English and Czech Tesseract OCR when embedded text is insufficient. After OCR, a document reports `processing_stage=AWAITING_SCREENING` until the AI integration publishes a result. Published summaries and extractions can be read through the API with Gemini offline.
+The Alembic revisions create the `vault` schema: accounts, family membership and grants, documents and processing jobs, extractions, summary cards, deadlines and reminders, and chat history. Revision `0004_ai_pipeline_alignment` aligns it with the Gemini pipeline (AI document types, summary cards instead of embeddings, `review_status`, event payloads) and drops the local OCR staging table.
 
-The API contract is available at `http://localhost:8000/docs`. Run the two-user local integration test against a healthy Compose stack with `docker compose exec -T api python - < tests/integration/test_local_vault.py`.
+The API contract is available at `http://localhost:8000/docs`. Run the two-user lifecycle test against a healthy Compose stack with `docker compose exec -T api python - < tests/integration/test_local_vault.py`.
 
 Check the migration and tables with these commands.
 
@@ -33,5 +33,13 @@ docker compose exec db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "\\d
 ```
 
 Add future revisions under `migrations/versions/` and rerun `docker compose up -d --build` followed by `docker compose wait migrate`.
+
+## Document processing
+
+Gemini reads the uploaded file directly; there is no local OCR. The worker claims jobs with `FOR UPDATE SKIP LOCKED`, classifies the document (router model), blocks blacklisted types in code, extracts text, facts and a summary card (main model), drops facts whose quotes are not in the text, and publishes in one transaction only if it still holds the attempt token. Blocked documents keep no original file. Provider outages retry with backoff up to three attempts, then `FAILED`. Every step, including token usage, is written to `document_events`.
+
+Documents expose two statuses: `processing_stage` (worker: `PENDING`, `PROCESSING`, `COMPLETED`, `FAILED`) and `review_status` (`UPLOADED` → `PROCESSING` → `REVIEW_REQUIRED` → `READY`, or `BLOCKED`, `FAILED`). Set `LLM_PROVIDER=fake` to run without a Gemini key.
+
+Run tests with `uv run pytest`. Integration tests need the Compose Postgres. They create and migrate a separate `vault_test` database automatically, so the running stack and its data are not affected.
 
 See [BACKEND_PLAN.md](BACKEND_PLAN.md) for the backend roadmap.

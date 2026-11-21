@@ -7,11 +7,21 @@ import unittest
 from datetime import date, timedelta
 from uuid import uuid4
 
-import pymupdf
+import struct
+import zlib
 import requests
 from sqlalchemy import text
 
 from vault.db import engine
+
+
+def _png(width, height):
+    def chunk(kind, body):
+        return struct.pack(">I", len(body)) + kind + body + struct.pack(">I", zlib.crc32(kind + body))
+
+    rows = b"".join(b"\x00" + b"\xff" * width * 3 for _ in range(height))
+    header = struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0)
+    return b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", header) + chunk(b"IDAT", zlib.compress(rows)) + chunk(b"IEND", b"")
 
 
 @unittest.skipUnless(
@@ -48,11 +58,7 @@ class LocalVaultTest(unittest.TestCase):
             bob_email, bob_tokens = account()
             alice = alice_tokens["access_token"]
             bob = bob_tokens["access_token"]
-            with pymupdf.open() as pdf:
-                page = pdf.new_page()
-                page.insert_text((72, 72), "Synthetic lease record for local OCR")
-                # Raster input exercises the Tesseract path.
-                scan = page.get_pixmap(matrix=pymupdf.Matrix(2, 2)).tobytes("png")
+            scan = _png(32, 32)  # tiny blank image; Gemini result is overwritten by fixtures below
             request(
                 "POST",
                 "/documents",
@@ -76,20 +82,27 @@ class LocalVaultTest(unittest.TestCase):
             self.assertEqual(
                 request("GET", "/documents?scope=all", 200, bob).json(), []
             )
-            for _ in range(40):
-                with engine.connect() as db:
-                    pages = db.execute(
-                        text(
-                            "SELECT pages FROM vault.document_ocr WHERE document_id=:id"
-                        ),
-                        {"id": document_id},
-                    ).scalar()
-                if pages:
+            # Wait for the worker (Gemini) to finish, then overwrite with fixed fixture data below.
+            for _ in range(60):
+                stage = request("GET", path, 200, alice).json()["processing_stage"]
+                if stage in ("COMPLETED", "FAILED"):
                     break
                 time.sleep(1)
-            self.assertTrue(pages)
-            self.assertIn("lease", pages[0]["text"])
-            self.assertEqual(pages[0]["method"], "ocr")
+            self.assertIn(stage, ("COMPLETED", "FAILED"))
+            pages = [{"page": 1, "text": "Synthetic lease record", "method": "fixture"}]
+            # Start from an unpublished state so sharing is refused until the fixture result below.
+            with engine.begin() as db:
+                db.execute(
+                    text(
+                        "UPDATE vault.documents SET policy_outcome=NULL,result_revision=0 WHERE id=:id"
+                    ),
+                    {"id": document_id},
+                )
+                for table in ("document_extractions", "document_summaries", "document_deadlines"):
+                    db.execute(
+                        text(f"DELETE FROM vault.{table} WHERE document_id=:id"),
+                        {"id": document_id},
+                    )
             family_id = request(
                 "POST", "/families", 201, alice, json={"name": "Test family"}
             ).json()["id"]
@@ -120,12 +133,15 @@ class LocalVaultTest(unittest.TestCase):
                 )
                 db.execute(
                     text("""INSERT INTO vault.document_extractions(document_id,revision,pages,facts,model_id,schema_version)
-                                   VALUES (:id,1,cast(:pages AS jsonb),'{}','fixture',1)"""),
+                                   VALUES (:id,1,cast(:pages AS jsonb),'{}','fixture',1)
+                                   ON CONFLICT (document_id) DO UPDATE SET revision=1,pages=EXCLUDED.pages,
+                                   facts='{}',overrides='{}',model_id='fixture'"""),
                     params,
                 )
                 db.execute(
-                    text("""INSERT INTO vault.document_summaries(document_id,revision,summary,embedding,embedding_model_id)
-                                   VALUES (:id,1,'Saved lease','[1,0]','fixture')"""),
+                    text("""INSERT INTO vault.document_summaries(document_id,revision,summary,card,model_id,prompt_version)
+                                   VALUES (:id,1,'Saved lease','{}','fixture','fixture')
+                                   ON CONFLICT (document_id) DO UPDATE SET revision=1,summary='Saved lease'"""),
                     params,
                 )
             request(
