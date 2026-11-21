@@ -4,7 +4,7 @@ Nov 21, 2026 · @Vitalii
 
 ## Огляд
 
-Контракти описують REST API бекенду `product_eng_hack4` з гілки `back`, коміт `8b33d02` (Gemini-воркер). Біля кожного ендпоінта стоїть статус: **Є** — реалізовано, можна інтегрувати; **Частково** — є, але відрізняється від PRD чи дизайну; **Нове** — пропозиція, бекенд має додати. Джерело правди для полів — код (`src/vault/*.py`, міграції `0002` і `0004`), живий Swagger — `http://localhost:8000/docs`.
+Контракти описують REST API бекенду `product_eng_hack4` з гілки `back`. Біля кожного ендпоінта стоїть статус: **Є** — реалізовано, можна інтегрувати; **Частково** — є, але відрізняється від PRD чи дизайну; **Нове** — пропозиція. Джерело правди для полів — код (`src/vault/*.py`, міграції `0002` і `0004`), живий Swagger — `http://localhost:8000/docs`.
 
 | Параметр | Значення |
 | --- | --- |
@@ -66,7 +66,7 @@ Nov 21, 2026 · @Vitalii
 
 ## Документи
 
-Завантаження, список, перегляд, редагування й виправлення даних від AI вже працюють. Бракує трьох речей: підтвердження документа (`REVIEW_REQUIRED` → `READY`), пошуку за назвою (FR-06) і маршруту для заміни файлу (сервіс уже написаний).
+Завантаження, перегляд, виправлення даних і підтвердження документа (`REVIEW_REQUIRED` → `READY`) працюють. Пошук за назвою та заміна файлу лишаються пропозиціями.
 
 | Ендпоінт | Статус | Запит → відповідь | Помилки та нюанси |
 | --- | --- | --- | --- |
@@ -80,7 +80,7 @@ Nov 21, 2026 · @Vitalii
 | `GET /documents/{id}/summary` | Є | → `200 {document_id, summary, card, revision}` | `409` немає опублікованого результату, `404` |
 | `GET /documents/{id}/extraction` | Є | → `200 Extraction` | `409` доки обробка не завершена або документ заблоковано |
 | `PATCH /documents/{id}/extraction` | Є | `{expected_revision, fields}` → `200 Extraction` | `409` застаріла `revision`. `fields` дописуються в `overrides` |
-| `POST /documents/{id}/confirm` | Нове | `{confirm_deadline_ids?: uuid[]}` → `200 Document` (`READY`, `confirmed_at`) | `409` якщо статус не `REVIEW_REQUIRED`. У `BACKEND_PLAN.md` позначено як planned |
+| `POST /documents/{id}/confirm` | Є | `{expected_result_revision, expected_extraction_revision}` → `200 Document` (`READY`, `confirmed_at`) | Лише власник. Версії беруться з `Document.result_revision` і `Extraction.revision`. Повтор з тими самими версіями ідемпотентний. `409` застаріла версія або документ ще не готовий до підтвердження |
 | `PUT /documents/{id}/file` | Нове | multipart `file` → `202 Document` | `409` йде обробка. Обгортка над готовим `replace_document_file` (FR-11) |
 | `GET /documents?q=&review_status=&order=-created_at` | Нове | Додати пошук за назвою, фільтр за `review_status` і сортування за датою | — |
 
@@ -131,9 +131,9 @@ Nov 21, 2026 · @Vitalii
 | Insurance | `AUTO_INSURANCE`, `HOME_INSURANCE` (сюди ж renters), `HEALTH_INSURANCE`, `TRAVEL_INSURANCE`, `LIFE_INSURANCE` |
 | Warranties & receipts | `WARRANTY`, `RECEIPT` |
 | Rental agreements | `LEASE` |
-| Family IDs (розширення) | `PASSPORT`, `DRIVERS_LICENSE`, `ID_CARD`, `GREEN_CARD`, `VISA`, `BIRTH_CERTIFICATE` |
-| Property (розширення) | `VEHICLE_REGISTRATION`, `VEHICLE_INSPECTION` |
-| Other | `OTHER` |
+| Family IDs | `PASSPORT`, `DRIVERS_LICENSE`, `ID_CARD` (зокрема ID штату США), `GREEN_CARD`, `VISA`, `BIRTH_CERTIFICATE` |
+| Vehicles | `VEHICLE_REGISTRATION`, `VEHICLE_INSPECTION` |
+| Other | `OTHER` (завжди `needs_review: true`) |
 | Заблоковані, не зберігаються | `MILITARY_OR_FEDERAL_ID`, `NATURALIZATION_CERTIFICATE`, `BIOMETRIC_OR_GENETIC`, `CREDENTIALS_OR_SECRETS`, `BANK_CARD_OR_CHECK` |
 
 У бекенді немає типів для Finance, Taxes, Legal, Business і Contacts зі списку команди. Passwords **суперечить** політиці бекенду: `CREDENTIALS_OR_SECRETS` блокується.
@@ -162,16 +162,16 @@ Nov 21, 2026 · @Vitalii
 
 ## Дедлайни й нагадування
 
-Дедлайни існують лише всередині документа. Для Home і вкладки Deadlines потрібен загальний список — його ще немає. Нагадування ставляться за 7 і 1 день о 09:00 за поясом користувача, а PRD і дизайн чекають 30, 7 і 1 день з налаштуванням для кожного дедлайну.
+Для Home і вкладки Deadlines доступний загальний список підтверджених дедлайнів власника. Нагадування ставляться за 7 і 1 день о 09:00 за поясом користувача.
 
 | Ендпоінт | Статус | Запит → відповідь | Помилки та нюанси |
 | --- | --- | --- | --- |
 | `GET /documents/{id}/deadlines` | Є | `?state=PROPOSED\|CONFIRMED\|REJECTED` → `200 Deadline[]`, відсортовані за датою | `409` документ ще не оброблено |
-| `POST /documents/{id}/deadlines` | Частково | `{type, date, label?}` → `201 Deadline` у стані `CONFIRMED` | `type` не приймає `DOCUMENT_EXPIRATION`. У запиті `type`/`date`, у відповіді `kind`/`due_on` |
+| `POST /documents/{id}/deadlines` | Є | `{type, date, label?}` → `201 Deadline` у стані `CONFIRMED` | У запиті `type`/`date`, у відповіді `kind`/`due_on` |
 | `PATCH /documents/{id}/deadlines/{deadline_id}` | Є | `{date?, label?, state?}` → `200 Deadline` | Підтвердити = `state: CONFIRMED` (створює нагадування), відхилити = `REJECTED`. `422` CONFIRMED без дати |
 | `GET /reminders` | Є | `?state=SCHEDULED\|DUE\|DISMISSED&through=<datetime>` → `200 Reminder[]` | Лише нагадування власника |
 | `POST /reminders/{id}/dismiss` | Є | → `200 Reminder` | Ідемпотентно |
-| `GET /deadlines` | Нове | `?state=CONFIRMED&due_before=YYYY-MM-DD&scope=owned\|all` → `200 DeadlineWithDocument[]` | Джерело для `HomeStatus`, hero-картки і вкладки Deadlines |
+| `GET /deadlines` | Є | → `200 Deadline[]` з додатковим полем `document_title` | Підтверджені дедлайни власника, впорядковані за `due_on` та `id` |
 | `PATCH …/deadlines/{id}` зі `state: DONE` | Нове | → `200 Deadline` з `completed_at` | *Mark as done* з FR-04 і дизайну. Зараз такого стану немає |
 | `reminder_offsets` у `POST`/`PATCH` дедлайну | Нове | `[30, 7, 1]` за замовчуванням | Для чипів `ReminderSchedule` |
 
@@ -195,7 +195,9 @@ Nov 21, 2026 · @Vitalii
 
 `kind`: `CONTRACT_EXPIRATION`, `CANCELLATION`, `INSURANCE_EXPIRATION`, `WARRANTY_EXPIRATION`, `PAYMENT_DUE`, `DOCUMENT_EXPIRATION`, `OTHER`. Надсилання нагадувань email чи push у бекенді немає: це лише записи, які застосунок читає з `GET /reminders?state=DUE`.
 
-**Похідний дедлайн (Нове).** Екран Confirm deadline показує пункт договору, розрахунок і результат (*Jan 31, 2027 − 30 days = Jan 1, 2027*). Зараз воркер створює лише дедлайн із `expires_on`, а `notice_period` залишається в `terms`. Пропозиція: воркер детерміновано рахує другий кандидат `candidate_key: "notice_deadline"` з `kind: CANCELLATION` і розширеним `evidence`. Якщо термін не розбирається, дедлайну немає, і клієнт пропонує ввести дату вручну.
+Для `UTILITY_BILL` воркер публікує `PAYMENT_DUE` зі станом `PROPOSED` за явно зазначеною датою оплати. В `Extraction.facts` доступні `payment_due_on` і `payment_due_on_quote`. Для інших типів воркер використовує `expires_on`. Якщо дати немає, власник може додати її вручну.
+
+**Похідний дедлайн (Нове).** Екран Confirm deadline показує пункт договору, розрахунок і результат (*Jan 31, 2027 − 30 days = Jan 1, 2027*). `notice_period` залишається в `terms`. Пропозиція: воркер детерміновано рахує другий кандидат `candidate_key: "notice_deadline"` з `kind: CANCELLATION` і розширеним `evidence`. Якщо термін не розбирається, клієнт пропонує ввести дату вручну.
 
 ```json
 // evidence для похідного дедлайну (пропозиція)
@@ -204,12 +206,9 @@ Nov 21, 2026 · @Vitalii
   "base": { "kind": "INSURANCE_EXPIRATION", "date": "2027-01-31" },
   "offset_days": -30
 }
-
-// DeadlineWithDocument для GET /deadlines (пропозиція) = Deadline + короткий документ
-{ "…Deadline": "…", "document": { "id": "0b6e…", "title": "Renters insurance", "category": "HOME_INSURANCE" } }
 ```
 
-`HomeStatus` рахує клієнт із `GET /deadlines?state=CONFIRMED`: є дедлайн із `due_on` у минулому → *overdue*; є в найближчі 30 днів → *attention*; інакше → *ok* і найближча дата в підрядку. Поки `/deadlines` немає, клієнт може зібрати те саме з `GET /reminders` і `GET /documents/{id}/deadlines` — це N+1 запитів, для демо прийнятно.
+`HomeStatus` рахує клієнт із `GET /deadlines`. Минула дата `due_on` дає *overdue*, дата в найближчі 30 днів дає *attention*. В інших випадках показуємо *ok* і найближчу дату, якщо вона є.
 
 ## Household і доступ для сім'ї
 
@@ -276,7 +275,7 @@ Nov 21, 2026 · @Vitalii
 
 ## Чат Ask
 
-Записи сесій чату вже є, а відправити запитання ще не можна: немає маршруту `POST /chat/{id}/messages`. Логіка відповіді готова в `vault.ai.chat.answer_question`: модель обирає до 3 документів, відповідає за їхнім повним текстом і перевіряє цитати. Екран Ask питає про всі документи одразу, тож потрібна сесія без `document_id` — схема БД це вже дозволяє.
+Чат працює в межах одного документа. Клієнт створює сесію через `POST /documents/{id}/chat` і надсилає запитання через `POST /chat/{id}/messages`. Для загального екрана Ask потрібна сесія без `document_id`.
 
 | Ендпоінт | Статус | Запит → відповідь | Помилки та нюанси |
 | --- | --- | --- | --- |
@@ -286,21 +285,20 @@ Nov 21, 2026 · @Vitalii
 | `DELETE /chat/{id}` | Є | → `204` | — |
 | `POST /chat` | Нове | `{title?}` → `201 ChatSession` з `document_id: null` | Сесія по всіх доступних документах |
 | `GET /chat` | Нове | → `200 ChatSession[]` | Історія для Ask |
-| `POST /chat/{id}/messages` | Нове | `{message}` → `201 ChatTurn` (синхронно, 2–8 с) | `409` попередній хід ще виконується, `503` Gemini недоступний. У `BACKEND_PLAN.md` — planned |
+| `POST /chat/{id}/messages` | Є | `{message}` → `201 ChatTurn`. Один запит на одне запитання, до 4000 символів | `404` сесія або документ недоступні, `409` змінився документ чи версія чату, `503` модель недоступна |
 
 ```json
 // ChatSession (зараз)
-{ "id": "c71e…", "owner_id": "6f1c…", "document_id": null, "title": null, "turn_version": 2,
+{ "id": "c71e…", "owner_id": "6f1c…", "document_id": "88b3…", "title": null, "turn_version": 2,
   "created_at": "2026-11-21T14:10:00Z", "updated_at": "2026-11-21T14:11:30Z" }
 
-// ChatTurn (схема таблиці chat_turns + два нові поля в citations)
+// ChatTurn
 {
   "id": "t09a…", "session_id": "c71e…", "turn_number": 1,
   "question": "When does my car insurance expire?",
   "answer_status": "ANSWERED",
   "answer": "Your Geico auto policy ends on Jan 18, 2027.",
-  "citations": [{ "document_id": "88b3…", "quote": "Policy period: 07/18/2026 to 01/18/2027",
-                  "document_title": "Auto policy - Geico", "page": 1 }],
+  "citations": [{ "document_id": "88b3…", "quote": "Policy period: 07/18/2026 to 01/18/2027" }],
   "routed_document_ids": ["88b3…"], "source_revision": 1, "created_at": "2026-11-21T14:10:04Z"
 }
 ```
@@ -309,7 +307,6 @@ Nov 21, 2026 · @Vitalii
 | --- | --- |
 | `ANSWERED` | Текст відповіді + чипи джерел із `citations` (тап відкриває документ) |
 | `INSUFFICIENT_INFORMATION` | Нейтральний notice: *I couldn’t find this in your documents* + підказка, що додати |
-| `REFUSED` | Notice: юридичних і фінансових порад асистент не дає |
 
 Зараз цитата містить лише `document_id` і `quote`. Щоб чип *Auto policy, Geico* не потребував окремих запитів, пропоную додати `document_title`. `page` поки мало що дасть: весь текст лежить як сторінка 1, тож номер сторінки в чипі не показуємо.
 
@@ -320,7 +317,7 @@ Nov 21, 2026 · @Vitalii
 1. Клієнт завантажує квиток через `POST /documents` і чекає на `REVIEW_REQUIRED`, як для будь-якого документа.
 2. Воркер для `FLIGHT_TICKET` витягує пасажирів, рейси та дати вильоту й повернення (**Нове**).
 3. `POST /documents/{ticket_id}/travel-check` → `200 TravelCheck` (**Нове**). Бекенд зіставляє кожного пасажира з паспортами, доступними власнику квитка, і порівнює `expires_on` з датою повернення.
-4. *Remind me to renew* → `POST /documents/{passport_id}/deadlines` з `type: DOCUMENT_EXPIRATION` — цей тип треба додати до дозволених у `DeadlineCreate`.
+4. *Remind me to renew* → `POST /documents/{passport_id}/deadlines` з `type: DOCUMENT_EXPIRATION`.
 
 ```json
 // TravelCheck (пропозиція)
@@ -345,35 +342,29 @@ Nov 21, 2026 · @Vitalii
 
 ## Екрани → ендпоінти
 
-З дев'яти екранів прототипу бекенд повністю покриває два (Add, Document), ще шість — частково, Ask і Flight added зараз не працюють. Демо з даними з бекенду можливе від Add до Confirm deadline, ще до доробок.
+Демо з даними з бекенду покриває завантаження, перевірку документа, підтвердження дедлайну та чат у межах документа.
 
 | Екран | Виклики | Готовність |
 | --- | --- | --- |
 | Sign up / Log in | `POST /auth/register`, `POST /auth/login`, `GET /users/me`; OTP — `POST /auth/otp/verify` (Нове) | Частково |
-| Home | `GET /families/me`; `GET /deadlines` (Нове) для статусу й hero; `GET /documents?scope=all` — *Waiting for your review* (фільтр `REVIEW_REQUIRED` на клієнті) і лічильники на плитках; *Mark as done* — `PATCH …/deadlines/{id}` зі `state: DONE` (Нове) | Частково |
+| Home | `GET /families/me`; `GET /deadlines` для статусу й hero; `GET /documents?scope=all` — *Waiting for your review* (фільтр `REVIEW_REQUIRED` на клієнті) і лічильники на плитках; *Mark as done* — `PATCH …/deadlines/{id}` зі `state: DONE` (Нове) | Частково |
 | Add (Scan, Upload) | `POST /documents` (камера дає JPG або PDF), далі опитування `GET /documents/{id}` | Є |
-| Review details | `GET /documents/{id}`, `GET /documents/{id}/extraction`, `PATCH /documents/{id}/extraction`, *Change* категорії — `PATCH /documents/{id}`; *Confirm details* — `POST /documents/{id}/confirm` (Нове) | Частково |
+| Review details | `GET /documents/{id}`, `GET /documents/{id}/extraction`, `PATCH /documents/{id}/extraction`, *Change* категорії — `PATCH /documents/{id}`; *Confirm details* — `POST /documents/{id}/confirm` | Є |
 | Confirm deadline | `GET /documents/{id}/deadlines?state=PROPOSED`, `PATCH …/deadlines/{id}` зі `state: CONFIRMED` або новою `date`; розрахунок і `reminder_offsets` (Нове) | Частково |
 | Document | `GET /documents/{id}`, `/extraction`, `/deadlines`, `/file`; `DELETE`; *Retry* — `POST /reprocess`; *Replace* — `PUT /documents/{id}/file` (Нове) | Є |
 | Share | *Household* — `POST`/`GET`/`DELETE /documents/{id}/shares`; *A person*, *Link that expires*, *Hide sensitive details* (Нове) | Частково |
-| Ask | `POST /chat`, `POST /chat/{id}/messages` (Нове), `GET /chat/{id}` | Не працює |
+| Ask | `POST /documents/{id}/chat`, `POST /chat/{id}/messages`, `GET /chat/{id}`. Сесія для всього сховища — `POST /chat` (Нове) | Частково |
 | Flight added | `POST /documents` + `POST /documents/{id}/travel-check` (Нове) | Не працює |
 | Household | `GET /families/me`, `GET /families/{id}/members`, `POST /families/invitations`; код, запити на вступ і рівні доступу (Нове) | Частково |
 | Vault (у прототипі немає) | `GET /documents?scope=all`, групування в плитки на клієнті; пошук `q` (Нове) | Частково |
 
 ## Що доробити на бекенді
 
-Для демо основного сценарію PRD (документ → AI → дедлайн) і чату критичні чотири пункти P0. Решта розширює демо, але його не блокує.
-
-### P0 — без цього демо не замкнеться
-
-- [ ] `POST /documents/{id}/confirm`: без нього жоден документ не стає `READY` (FR-02)
-- [ ] `POST /chat` і `POST /chat/{id}/messages` поверх готового `answer_question` (FR-07, екран Ask)
-- [ ] `GET /deadlines` по всіх документах і стан `DONE` для *Mark as done* (Home, FR-04)
-- [ ] Email OTP (FR-01) — або свідомо відкласти й сказати про це на демо
+Підтвердження документа, список дедлайнів власника й чат у межах документа вже доступні. Для демо використовується вхід за email і паролем.
 
 ### P1 — те, що показує прототип
 
+- [ ] `POST /chat` для Ask по всьому сховищу та стан `DONE` для *Mark as done*, якщо ці дії потрібні в інтерфейсі
 - [ ] Нагадування за 30, 7 і 1 день і `reminder_offsets` на дедлайні (зараз 7 і 1, FR-05)
 - [ ] Похідний дедлайн `CANCELLATION` із `notice_period` і `evidence.base`/`offset_days` (екран Confirm deadline)
 - [ ] Посилання з терміном дії 1h / 24h / 7d і приховування даних (FR-08, FR-09)
@@ -396,10 +387,9 @@ Nov 21, 2026 · @Vitalii
 | Що | Бекенд | PRD або дизайн | Пропозиція |
 | --- | --- | --- | --- |
 | Ліміт файлу | 20 MB, без ліміту сторінок | 10 MB, до 20 сторінок PDF | `MAX_UPLOAD_MB=10`; в дизайні лишити *up to 10 MB* |
-| Поля дедлайну | Запит: `type`, `date`; відповідь: `kind`, `due_on` | — | Приймати `kind` і `due_on` також, додати `DOCUMENT_EXPIRATION` до типів |
+| Поля дедлайну | Запит: `type`, `date`; відповідь: `kind`, `due_on` | — | Приймати `kind` і `due_on` також |
 | Фільтр `status` | Стадія воркера | Клієнту потрібен `review_status` | Новий параметр `review_status` |
 | Категорії | 20 AI-типів | 4 групи MVP + 9 категорій команди | Таблиця групування в розділі «Документи» |
 | Passwords | `CREDENTIALS_OR_SECRETS` блокується | Категорія в списку команди | Прибрати з продукту або зберігати доступи окремо, не документами |
-| Паспорти і ID | Дозволені | PRD виключає з MVP, крім перевірки квитка | Лишити для `TravelCheck`, в інтерфейсі поки не просувати |
 | Стан `BLOCKED` | Є | У дизайні немає | Додати в дизайн-систему notice з `policy_reason` |
 | Нативний застосунок | CORS налаштований лише на веб | PRD: веб; команда: Flutter | Flutter на CORS не залежить; для телефона виставити API в локальній мережі (зараз лише loopback) |

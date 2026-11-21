@@ -60,6 +60,8 @@ def answer_question(
         return ChatResult(found=False, answer=NOT_FOUND, citations=[], routed_document_ids=[], usage=usage)
 
     texts = load_texts(doc_ids)
+    if not texts:
+        return ChatResult(found=False, answer=NOT_FOUND, citations=[], routed_document_ids=doc_ids, usage=usage)
     answered = llm.generate_json(
         role=ModelRole.MAIN,
         system=prompts.ANSWER_SYSTEM,
@@ -69,7 +71,11 @@ def answer_question(
     usage.add(answered.usage)
     answer = answered.value
 
-    valid = [c for c in answer.citations if c.document_id in texts and normalize_text(c.quote) in normalize_text(texts[c.document_id])]
+    normalized = {doc_id: normalize_text(source) for doc_id, source in texts.items()}
+    valid = [
+        citation for citation in answer.citations
+        if (quote := normalize_text(citation.quote)) and quote in normalized.get(citation.document_id, "")
+    ]
     dropped = len(answer.citations) - len(valid)
     found = answer.found and bool(valid)
     return ChatResult(

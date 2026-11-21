@@ -120,14 +120,14 @@ def test_chat_answer_without_verifiable_citation_is_not_found():
             ChatAnswer: ChatAnswer(
                 found=True,
                 answer="It expires in 2040",
-                citations=[Citation(document_id="doc-1", quote="expires 2040")],
+                citations=[Citation(document_id="doc-1", quote="expires 2040"), Citation(document_id="doc-1", quote=" ")],
             ),
         }
     )
     result = answer_question(llm, "When?", _cards(), load_texts=lambda ids: {i: PASSPORT_TEXT for i in ids})
     assert not result.found
     assert result.answer == NOT_FOUND
-    assert result.dropped_citations == 1
+    assert result.dropped_citations == 2
 
 
 def test_mask_identifiers():

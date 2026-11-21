@@ -102,6 +102,14 @@ class Extraction(BaseModel):
     expires_on_quote: str | None = Field(
         description="Exact substring of full_text that states the expiration date. Null if expires_on is null.",
     )
+    payment_due_on: str | None = Field(
+        default=None,
+        description="Explicit payment due date on a utility bill as YYYY-MM-DD. Null if absent or ambiguous.",
+    )
+    payment_due_on_quote: str | None = Field(
+        default=None,
+        description="Exact substring of full_text that identifies the utility bill payment due date.",
+    )
     summary: SummaryCard
 
 

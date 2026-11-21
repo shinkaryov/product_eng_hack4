@@ -5,18 +5,23 @@ user and deletes its rows afterwards.
 """
 
 import uuid
+from datetime import date, timedelta
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 
+from vault import saved
 from vault.ai.schemas import (
+    ChatAnswer,
+    Citation,
     Classification,
     DocType,
     DocumentFact,
     Extraction,
     MoneyFact,
+    RouteDecision,
     SummaryCard,
 )
 from vault.config import get_settings
@@ -97,6 +102,38 @@ def _stored_files(client):
     return [p for p in client.files_dir.iterdir() if p.is_file() and not p.name.startswith(".")]
 
 
+def _chat_llm(doc_id, response=None):
+    return FakeLLMClient(responses={
+        RouteDecision: RouteDecision(document_ids=[doc_id]),
+        ChatAnswer: response or ChatAnswer(
+            found=True, answer="The deductible is $500.",
+            citations=[Citation(document_id=doc_id, quote="Collision deductible: $500.00")],
+        ),
+    })
+
+
+@pytest.fixture
+def household(api):
+    from vault.main import app
+
+    viewer = TestClient(app)
+    login = {"email": f"{uuid.uuid4().hex}@example.test", "password": uuid.uuid4().hex}
+    user = viewer.post("/v1/auth/register", json=login).json()
+    viewer.headers["Authorization"] = "Bearer " + viewer.post("/v1/auth/login", json=login).json()["access_token"]
+    family = api.post("/v1/families", json={"name": "Test household"}).json()
+    try:
+        invite = api.post("/v1/families/invitations", json={"email": login["email"]}).json()
+        response = viewer.post(f"/v1/families/invitations/{invite['id']}/respond", json={
+            "secret": invite["secret"], "decision": "accept",
+        })
+        assert response.status_code == 200, response.text
+        yield viewer, family["id"]
+    finally:
+        with engine.begin() as conn:
+            conn.execute(text("DELETE FROM vault.families WHERE id=:id"), {"id": family["id"]})
+            conn.execute(text("DELETE FROM vault.users WHERE id=:id"), {"id": user["id"]})
+
+
 def test_worker_publishes_summary_extraction_and_deadline(api):
     doc_id = _upload(api, "scan.pdf", PDF, "application/pdf")
     llm = _insurance_llm()
@@ -138,6 +175,161 @@ def test_blocked_document_stays_visible_without_file(api):
 
     with SessionLocal() as s:
         processing.cleanup_files(s)
+    assert _stored_files(api) == []
+
+
+def test_utility_due_date_and_owner_deadline_timeline(api, household):
+    viewer, family_id = household
+    doc_id = _upload(api, "utility.pdf", PDF, "application/pdf")
+    path = f"/v1/documents/{doc_id}"
+    due = (date.today() + timedelta(days=20)).isoformat()
+    quote = f"Payment due: {due}"
+    llm = _insurance_llm()
+    llm.responses[Classification] = Classification(doc_type=DocType.UTILITY_BILL, confidence=0.98, reason="utility bill")
+    llm.responses[Extraction] = Extraction(
+        full_text=f"ACME Energy\nStatement date: 2026-11-01\n{quote}", identifiers=[], terms=[], financials=[],
+        expires_on=None, expires_on_quote=None, payment_due_on=due, payment_due_on_quote=quote,
+        summary=SummaryCard(title="ACME utility bill", holder=None, issuer="ACME", key_facts=[], topics=[]),
+    )
+    assert _run_worker(llm)
+    assert api.get(path + "/extraction").json()["facts"]["payment_due_on"] == due
+    deadline, = api.get(path + "/deadlines").json()
+    assert (deadline["kind"], deadline["due_on"], deadline["state"]) == ("PAYMENT_DUE", due, "PROPOSED")
+    assert deadline["evidence"] == {"quote": quote}
+    assert api.get("/v1/deadlines").json() == []
+
+    response = api.patch(path + f"/deadlines/{deadline['id']}", json={"state": "CONFIRMED"})
+    assert response.status_code == 200, response.text
+    reminder = api.get("/v1/reminders").json()[0]
+    assert api.post(f"/v1/reminders/{reminder['id']}/dismiss").status_code == 200
+    assert api.post(path + "/shares", json={"family_id": family_id}).status_code == 200
+    assert viewer.get(path + "/deadlines").status_code == 200
+    assert viewer.get("/v1/deadlines").json() == []
+    item, = api.get("/v1/deadlines").json()
+    assert (item["id"], item["document_id"], item["document_title"], item["due_on"]) == (
+        deadline["id"], doc_id, "ACME utility bill", due,
+    )
+
+    # Older workers applied the expiration key to utility bills. Preserve the owner's decision on reprocess.
+    with engine.begin() as conn:
+        conn.execute(text("UPDATE vault.document_deadlines SET candidate_key='expires_on' WHERE id=:id"), {
+            "id": deadline["id"],
+        })
+    assert api.post(path + "/reprocess").status_code == 202
+    assert _run_worker(llm)
+    updated, = api.get(path + "/deadlines").json()
+    assert (updated["id"], updated["state"], updated["candidate_key"]) == (
+        deadline["id"], "CONFIRMED", "payment_due_on",
+    )
+
+    llm.responses[Extraction].payment_due_on_quote = "A quote missing from the bill"
+    assert api.post(path + "/reprocess").status_code == 202
+    assert _run_worker(llm)
+    facts = api.get(path + "/extraction").json()["facts"]
+    assert facts["payment_due_on"] is None and facts["needs_review"]
+    assert "payment_due_on quote not found in document text" in facts["warnings"]
+
+
+def test_confirm_checks_current_owner_and_both_revisions(api, household):
+    viewer, family_id = household
+    doc_id = _upload(api, "policy.pdf", PDF, "application/pdf")
+    path = f"/v1/documents/{doc_id}"
+    revisions = {"expected_result_revision": 1, "expected_extraction_revision": 1}
+    assert api.post(path + "/confirm", json=revisions).status_code == 409
+    assert _run_worker(_insurance_llm())
+    assert api.post(path + "/shares", json={"family_id": family_id}).status_code == 200
+    assert viewer.post(path + "/confirm", json=revisions).status_code == 403
+    ready = api.post(path + "/confirm", json=revisions)
+    assert ready.status_code == 200, ready.text
+    assert ready.json()["review_status"] == "READY" and ready.json()["confirmed_at"]
+    assert api.post(path + "/confirm", json=revisions).json() == ready.json()
+    assert api.get(path + "/deadlines").json()[0]["state"] == "PROPOSED"
+
+    response = api.patch(path + "/extraction", json={"expected_revision": 1, "fields": {"issuer": "Updated"}})
+    assert response.status_code == 200, response.text
+    assert api.get(path).json()["review_status"] == "REVIEW_REQUIRED"
+    assert api.post(path + "/confirm", json=revisions).status_code == 409
+    revisions["expected_extraction_revision"] = 2
+    assert api.post(path + "/confirm", json=revisions).status_code == 200
+    assert api.post(path + "/reprocess").json()["confirmed_at"] is None
+    assert api.post(path + "/confirm", json=revisions).status_code == 409
+    assert _run_worker(_insurance_llm())
+    assert api.post(path + "/confirm", json=revisions).status_code == 409
+    revisions["expected_result_revision"] = 2
+    assert api.post(path + "/confirm", json=revisions).status_code == 200
+
+
+def test_chat_turns_respect_current_share_access(api, household, monkeypatch):
+    viewer, family_id = household
+    doc_id = _upload(api, "policy.pdf", PDF, "application/pdf")
+    assert _run_worker(_insurance_llm())
+    doc_path = f"/v1/documents/{doc_id}"
+    assert api.post(doc_path + "/shares", json={"family_id": family_id}).status_code == 200
+    chat_id = viewer.post(doc_path + "/chat").json()["id"]
+    path = f"/v1/chat/{chat_id}"
+    question = {"message": "What is the deductible?"}
+    llm = _chat_llm(doc_id)
+    monkeypatch.setattr(saved, "get_llm_client", lambda: llm)
+    assert api.post(path + "/messages", json=question).status_code == 404
+    assert viewer.post(path + "/messages", json={"message": "   "}).status_code == 422
+
+    def unavailable(_call):
+        raise LLMUnavailable("provider down")
+
+    monkeypatch.setattr(saved, "get_llm_client", lambda: _chat_llm(doc_id, response=unavailable))
+    assert viewer.post(path + "/messages", json=question).status_code == 503
+    monkeypatch.setattr(saved, "get_llm_client", lambda: llm)
+    result = viewer.post(path + "/messages", json=question)
+    assert result.status_code == 201, result.text
+    turn = result.json()
+    assert (turn["turn_number"], turn["answer_status"], turn["source_revision"]) == (1, "ANSWERED", 1)
+    assert turn["citations"] == [{"document_id": doc_id, "quote": "Collision deductible: $500.00"}]
+    assert viewer.get(path).json()["turns"] == [turn]
+
+    def revoke_during_inference(_call):
+        assert api.delete(doc_path + "/shares").status_code == 204
+        return llm.responses[ChatAnswer]
+
+    monkeypatch.setattr(saved, "get_llm_client", lambda: _chat_llm(doc_id, response=revoke_during_inference))
+    assert viewer.post(path + "/messages", json=question).status_code == 404
+    assert viewer.get(path).status_code == 404
+    assert api.post(doc_path + "/shares", json={"family_id": family_id}).status_code == 200
+    assert viewer.get(path).json()["turns"] == [turn]
+
+    def republish_during_inference(_call):
+        assert api.post(doc_path + "/reprocess").status_code == 202
+        assert _run_worker(_insurance_llm())
+        return llm.responses[ChatAnswer]
+
+    monkeypatch.setattr(saved, "get_llm_client", lambda: _chat_llm(doc_id, response=republish_during_inference))
+    assert viewer.post(path + "/messages", json=question).status_code == 409
+    assert viewer.get(path).json()["turns"] == [turn]
+
+
+def test_reprocessing_as_blocked_purges_published_data(api, monkeypatch):
+    doc_id = _upload(api, "policy.pdf", PDF, "application/pdf")
+    assert _run_worker(_insurance_llm())
+    path = f"/v1/documents/{doc_id}"
+    due = (date.today() + timedelta(days=20)).isoformat()
+    assert api.post(path + "/deadlines", json={"type": "OTHER", "date": due}).status_code == 201
+    assert api.get("/v1/reminders").json()
+    chat_id = api.post(path + "/chat").json()["id"]
+    monkeypatch.setattr(saved, "get_llm_client", lambda: _chat_llm(doc_id))
+    assert api.post(f"/v1/chat/{chat_id}/messages", json={"message": "Deductible?"}).status_code == 201
+
+    assert api.post(path + "/reprocess").status_code == 202
+    assert _run_worker(FakeLLMClient(responses={
+        Classification: Classification(doc_type=DocType.BANK_CARD_OR_CHECK, confidence=0.95, reason="bank card"),
+    }))
+    assert api.get(path).json()["title"] == "Blocked document"
+    assert api.get("/v1/deadlines").json() == []
+    assert api.get("/v1/reminders").json() == []
+    assert api.get(f"/v1/chat/{chat_id}").status_code == 404
+    with SessionLocal() as session:
+        for table in ("document_extractions", "document_summaries", "document_deadlines", "chat_sessions"):
+            assert session.execute(text(f"SELECT 1 FROM vault.{table} WHERE document_id=:id"), {"id": doc_id}).first() is None
+        session.rollback()
+        processing.cleanup_files(session)
     assert _stored_files(api) == []
 
 

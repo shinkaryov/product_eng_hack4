@@ -18,10 +18,11 @@ router = APIRouter(prefix="/v1/documents")
 # User-selectable categories = AI document types except blacklisted ones (vault.ai.policy).
 Category = Literal[tuple(t.name for t in DocType if t not in BLOCKED_TYPES)]  # type: ignore[valid-type]
 Status = Literal["PENDING", "PROCESSING", "COMPLETED", "FAILED"]
+VIEWER_GRANT = """SELECT 1 FROM vault.document_shares s
+    JOIN vault.family_members m ON m.id=s.membership_id
+    JOIN vault.family_members o ON o.family_id=m.family_id WHERE m.user_id=:uid"""
 ACCESS = """(d.owner_id=:uid OR (d.policy_outcome='ALLOWED' AND d.result_revision>0 AND EXISTS (
-    SELECT 1 FROM vault.document_shares s JOIN vault.family_members m ON m.id=s.membership_id
-    JOIN vault.family_members o ON o.family_id=m.family_id AND o.user_id=d.owner_id
-    WHERE s.document_id=d.id AND m.user_id=:uid)))"""
+    """ + VIEWER_GRANT + " AND s.document_id=d.id AND o.user_id=d.owner_id)))"
 SELECT_DOC = """SELECT d.*,j.status,j.error_code,j.started_at,j.finished_at,f.display_filename,f.media_type,f.size_bytes,
     j.status AS processing_stage,
     CASE WHEN d.policy_outcome='ALLOWED' THEN summary.summary END AS summary,
@@ -30,7 +31,7 @@ SELECT_DOC = """SELECT d.*,j.status,j.error_code,j.started_at,j.finished_at,f.di
     LEFT JOIN vault.document_summaries summary ON summary.document_id=d.id """
 
 
-def document(db, user, id, *, owner=False, published=False):
+def document(db, user, id, *, owner=False, published=False, lock_share=False):
     row = required(
         query(
             db,
@@ -43,6 +44,12 @@ def document(db, user, id, *, owner=False, published=False):
         raise HTTPException(403, "Document owner required")
     if published and (row["policy_outcome"] != "ALLOWED" or not row["result_revision"]):
         raise HTTPException(409, "No allowed published result")
+    if lock_share and row["owner_id"] != user["id"]:
+        # Take a fresh snapshot after locking the document and serialize with membership revocation.
+        required(query(
+            db, VIEWER_GRANT + " AND s.document_id=:document_id AND o.user_id=:owner_id FOR SHARE OF s",
+            document_id=id, owner_id=row["owner_id"], uid=user["id"],
+        ).first())
     return row
 
 
@@ -59,6 +66,11 @@ class Metadata(BaseModel):
 class Corrections(BaseModel):
     expected_revision: int
     fields: dict
+
+
+class Confirmation(BaseModel):
+    expected_result_revision: int = Field(gt=0)
+    expected_extraction_revision: int = Field(gt=0)
 
 
 class Share(BaseModel):
@@ -233,9 +245,40 @@ def retry(id: UUID, db: DB, user: User):
                 error_code=NULL,started_at=NULL,finished_at=NULL WHERE document_id=:id""",
         id=id,
     )
+    query(
+        db,
+        "UPDATE vault.documents SET review_status='UPLOADED',confirmed_at=NULL,updated_at=now() WHERE id=:id",
+        id=id,
+    )
     result = document(db, user, id)
     db.commit()
     return result
+
+
+@router.post("/{id}/confirm")
+def confirm(id: UUID, body: Confirmation, db: DB, user: User):
+    doc = document(db, user, id, owner=True, published=True)
+    if doc["status"] != "COMPLETED" or doc["review_status"] not in ("REVIEW_REQUIRED", "READY"):
+        raise HTTPException(409, "Document is not ready for confirmation")
+    revision = query(
+        db, "SELECT revision FROM vault.document_extractions WHERE document_id=:id", id=id
+    ).first()
+    if (
+        doc["result_revision"] != body.expected_result_revision
+        or revision is None
+        or revision["revision"] != body.expected_extraction_revision
+    ):
+        raise HTTPException(409, "Reviewed revision unavailable")
+    if doc["review_status"] == "REVIEW_REQUIRED":
+        updated = query(
+            db,
+            """UPDATE vault.documents SET review_status='READY',confirmed_at=now(),updated_at=now()
+               WHERE id=:id RETURNING review_status,confirmed_at,updated_at""",
+            id=id,
+        ).one()
+        doc.update(updated)
+    db.commit()
+    return doc
 
 
 @router.get("/{id}/summary")
@@ -274,6 +317,12 @@ def correct(id: UUID, body: Corrections, db: DB, user: User):
     ).first()
     if not row:
         raise HTTPException(409, "Extraction revision unavailable")
+    query(
+        db,
+        """UPDATE vault.documents SET review_status='REVIEW_REQUIRED',confirmed_at=NULL,updated_at=now()
+           WHERE id=:id AND review_status='READY'""",
+        id=id,
+    )
     db.commit()
     return dict(row)
 

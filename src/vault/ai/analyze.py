@@ -8,8 +8,14 @@ from decimal import Decimal, InvalidOperation
 from vault.ai import prompts
 from vault.ai.policy import block_reason
 from vault.ai.redact import redact_card
-from vault.ai.schemas import Classification, DocType, DocumentFact, Extraction, MoneyFact
-from vault.ai.text import normalize_text
+from vault.ai.schemas import (
+    Classification,
+    DocType,
+    DocumentFact,
+    Extraction,
+    MoneyFact,
+)
+from vault.ai.text import normalize_text, validated_date
 from vault.llm import Attachment, LLMClient, ModelRole, UsageLog
 
 # Below this confidence the UI asks the user to confirm the type.
@@ -66,9 +72,9 @@ def analyze_document(llm: LLMClient, data: bytes, mime_type: str) -> AnalysisRes
     extraction = extracted.value
     extraction.summary = redact_card(extraction.summary)
     result.extraction = extraction
-    result.expires_on = _validated_expiry(extraction, result.warnings)
-    if extraction.expires_on and result.expires_on is None:
-        result.needs_review = True
+    result.expires_on = validated_date(
+        "expires_on", extraction.expires_on, extraction.expires_on_quote, extraction.full_text, result.warnings
+    )
 
     before = len(extraction.identifiers) + len(extraction.terms) + len(extraction.financials)
     extraction.identifiers = [f for f in extraction.identifiers if _fact_ok(f, extraction.full_text, strict_value=True)]
@@ -77,7 +83,7 @@ def analyze_document(llm: LLMClient, data: bytes, mime_type: str) -> AnalysisRes
     dropped = before - (len(extraction.identifiers) + len(extraction.terms) + len(extraction.financials))
     if dropped:
         result.warnings.append(f"dropped {dropped} extracted facts not supported by document text")
-        result.needs_review = True
+    result.needs_review = result.needs_review or bool(result.warnings)
     return result
 
 
@@ -107,20 +113,3 @@ def parse_amount(raw: str) -> Decimal | None:
         return Decimal(cleaned) if cleaned else None
     except InvalidOperation:
         return None
-
-
-def _validated_expiry(extraction: Extraction, warnings: list[str]) -> date | None:
-    """Accept the date only if it parses and its quote really appears in the document text."""
-    if not extraction.expires_on:
-        return None
-    try:
-        parsed = date.fromisoformat(extraction.expires_on)
-    except ValueError:
-        warnings.append(f"expires_on is not a valid date: {extraction.expires_on!r}")
-        return None
-    quote = (extraction.expires_on_quote or "").strip()
-    if not quote or normalize_text(quote) not in normalize_text(extraction.full_text):
-        warnings.append("expires_on quote not found in document text")
-        return None
-    return parsed
-

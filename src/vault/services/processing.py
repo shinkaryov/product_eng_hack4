@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 
 from vault.ai.analyze import AnalysisResult, analyze_document
 from vault.ai.schemas import DocType
+from vault.ai.text import validated_date
 from vault.config import get_settings
 from vault.llm import LLMClient, LLMInvalidOutput, LLMUnavailable
 
@@ -22,7 +23,7 @@ log = logging.getLogger("vault.processing")
 
 LEASE_SECONDS = 300
 MAX_ATTEMPTS = 3
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 _DEADLINE_KIND: dict[DocType, str] = {
     DocType.AUTO_INSURANCE: "INSURANCE_EXPIRATION",
@@ -137,13 +138,23 @@ def publish_result(session: Session, job: ClaimedJob, result: AnalysisResult) ->
                 text("""
                     UPDATE vault.documents
                     SET review_status = 'BLOCKED', category = :cat, classification_confidence = :conf,
-                        policy_outcome = 'BLOCKED', policy_reason = :reason, updated_at = now()
+                        policy_outcome = 'BLOCKED', policy_reason = :reason, confirmed_at = NULL,
+                        title = 'Blocked document', subtype = NULL, updated_at = now()
                     WHERE id = :id
                 """),
                 {"id": job.document_id, "cat": doc_type.name, "conf": result.classification.confidence, "reason": result.blocked_reason},
             )
-            # Blacklisted type: keep no copy of the original.
-            session.execute(text("DELETE FROM vault.document_files WHERE document_id = :id"), {"id": job.document_id})
+            # Earlier results may exist if a reprocess reclassified the document.
+            # Deleting deadlines and chat sessions also removes their reminders and turns.
+            for table in (
+                "document_files", "document_extractions", "document_summaries",
+                "document_deadlines", "chat_sessions", "document_shares",
+            ):
+                session.execute(text(f"DELETE FROM vault.{table} WHERE document_id = :id"), {"id": job.document_id})
+            session.execute(
+                text("DELETE FROM vault.document_events WHERE document_id = :id AND event_name = 'ANALYZED'"),
+                {"id": job.document_id},
+            )
             session.execute(
                 text("INSERT INTO vault.file_cleanup_jobs (storage_key) VALUES (:k) ON CONFLICT DO NOTHING"),
                 {"k": job.storage_key},
@@ -159,6 +170,14 @@ def publish_result(session: Session, job: ClaimedJob, result: AnalysisResult) ->
             {"id": job.document_id},
         ).scalar_one()
         main_model = result.usage.calls[-1].model if result.usage.calls else "unknown"
+        warnings = list(result.warnings)
+        payment_due_on = None
+        if doc_type is DocType.UTILITY_BILL:
+            payment_due_on = validated_date(
+                "payment_due_on", extraction.payment_due_on, extraction.payment_due_on_quote,
+                extraction.full_text, warnings,
+            )
+        needs_review = result.needs_review or bool(warnings)
         card = extraction.summary
 
         session.execute(
@@ -181,8 +200,10 @@ def publish_result(session: Session, job: ClaimedJob, result: AnalysisResult) ->
                     "classification_reason": result.classification.reason,
                     "expires_on": result.expires_on.isoformat() if result.expires_on else None,
                     "expires_on_quote": extraction.expires_on_quote if result.expires_on else None,
-                    "warnings": result.warnings,
-                    "needs_review": result.needs_review,
+                    "payment_due_on": payment_due_on.isoformat() if payment_due_on else None,
+                    "payment_due_on_quote": extraction.payment_due_on_quote if payment_due_on else None,
+                    "warnings": warnings,
+                    "needs_review": needs_review,
                 }),
                 "ids": json.dumps([f.model_dump() for f in extraction.identifiers]),
                 "terms": json.dumps([f.model_dump() for f in extraction.terms]),
@@ -204,24 +225,50 @@ def publish_result(session: Session, job: ClaimedJob, result: AnalysisResult) ->
              "model": main_model, "pv": result.prompt_version},
         )
 
-        if result.expires_on:
+        if doc_type is DocType.UTILITY_BILL:
+            deadline_date = payment_due_on
+            candidate_key = "payment_due_on"
+            deadline_quote = extraction.payment_due_on_quote
+            # Preserve an owner's decision from builds that gave utility deadlines the expiration key.
+            session.execute(
+                text("""
+                    UPDATE vault.document_deadlines SET candidate_key = 'payment_due_on'
+                    WHERE document_id = :id AND candidate_key = 'expires_on'
+                      AND kind = 'PAYMENT_DUE' AND state <> 'PROPOSED'
+                      AND NOT EXISTS (
+                          SELECT 1 FROM vault.document_deadlines
+                          WHERE document_id = :id AND candidate_key = 'payment_due_on'
+                      )
+                """),
+                {"id": job.document_id},
+            )
+        else:
+            deadline_date = result.expires_on
+            candidate_key = "expires_on"
+            deadline_quote = extraction.expires_on_quote
+
+        session.execute(
+            text("""
+                DELETE FROM vault.document_deadlines
+                WHERE document_id = :id AND state = 'PROPOSED'
+                  AND candidate_key IN ('expires_on', 'payment_due_on')
+                  AND candidate_key IS DISTINCT FROM :key
+            """),
+            {"id": job.document_id, "key": candidate_key if deadline_date else None},
+        )
+        if deadline_date:
             kind = _DEADLINE_KIND.get(doc_type, "DOCUMENT_EXPIRATION")
             # Owner decisions (CONFIRMED / REJECTED) survive reprocessing.
             session.execute(
                 text("""
                     INSERT INTO vault.document_deadlines (document_id, kind, due_on, raw_value, state, evidence, candidate_key)
-                    VALUES (:id, :kind, :due, :raw, 'PROPOSED', CAST(:ev AS jsonb), 'expires_on')
+                    VALUES (:id, :kind, :due, :raw, 'PROPOSED', CAST(:ev AS jsonb), :key)
                     ON CONFLICT (document_id, candidate_key) DO UPDATE SET
                         kind = EXCLUDED.kind, due_on = EXCLUDED.due_on, raw_value = EXCLUDED.raw_value, evidence = EXCLUDED.evidence
                     WHERE vault.document_deadlines.state = 'PROPOSED'
                 """),
-                {"id": job.document_id, "kind": kind, "due": result.expires_on, "raw": extraction.expires_on,
-                 "ev": json.dumps({"quote": extraction.expires_on_quote})},
-            )
-        else:
-            session.execute(
-                text("DELETE FROM vault.document_deadlines WHERE document_id = :id AND candidate_key = 'expires_on' AND state = 'PROPOSED'"),
-                {"id": job.document_id},
+                {"id": job.document_id, "kind": kind, "due": deadline_date, "raw": deadline_date.isoformat(),
+                 "key": candidate_key, "ev": json.dumps({"quote": deadline_quote})},
             )
 
         # No document becomes READY without the owner's confirmation (PRD FR-02).
@@ -229,7 +276,8 @@ def publish_result(session: Session, job: ClaimedJob, result: AnalysisResult) ->
         session.execute(
             text("""
                 UPDATE vault.documents d
-                SET review_status = 'REVIEW_REQUIRED', category = :cat, classification_confidence = :conf,
+                SET review_status = 'REVIEW_REQUIRED', confirmed_at = NULL,
+                    category = :cat, classification_confidence = :conf,
                     policy_outcome = :outcome, policy_reason = NULL, updated_at = now(),
                     title = CASE WHEN d.title = f.display_filename THEN :ai_title ELSE d.title END
                 FROM vault.document_files f
@@ -239,7 +287,7 @@ def publish_result(session: Session, job: ClaimedJob, result: AnalysisResult) ->
              "outcome": "ALLOWED", "ai_title": card.title[:200] or "Document"},
         )
         _event(session, job.document_id, "ANALYZED", {
-            "doc_type": doc_type.value, "needs_review": result.needs_review, "warnings": result.warnings, "usage": usage,
+            "doc_type": doc_type.value, "needs_review": needs_review, "warnings": warnings, "usage": usage,
         })
         _finish_completed(session, job.document_id)
     return
