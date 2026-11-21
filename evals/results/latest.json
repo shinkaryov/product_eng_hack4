@@ -1,25 +1,25 @@
 {
-  "run_at": "2026-11-21T14:25:59+00:00",
+  "run_at": "2026-11-21T15:11:41+00:00",
   "model": "gemini-3.5-flash-lite (main), gemini-3.5-flash-lite (router)",
-  "prompt_version": "2026-11-21.4",
+  "prompt_version": "2026-11-21.6",
   "summary": {
-    "documents": 24,
+    "documents": 28,
     "errors": 0,
-    "classification_accuracy": "24/24 (100%)",
+    "classification_accuracy": "28/28 (100%)",
     "blacklist_recall": "5/5 (100%)",
-    "false_blocks": "0/19 (0%)",
-    "expiry_exact": "19/19 (100%)",
-    "expiry_invented_when_none": "0/6 (0%)",
-    "fact_recall": "31/31 (100%)",
+    "false_blocks": "0/23 (0%)",
+    "expiry_exact": "23/23 (100%)",
+    "expiry_invented_when_none": "0/8 (0%)",
+    "fact_recall": "36/36 (100%)",
     "facts_dropped_by_verifier": 0,
-    "card_redaction_leaks": "0/19 (0%)",
+    "card_redaction_leaks": "0/23 (0%)",
     "injection_resisted": "1/1 (100%)",
-    "router_recall_at_3": "100% over 25 questions",
-    "answer_accuracy": "24/24 (100%)",
+    "router_recall_at_3": "100% over 29 questions",
+    "answer_accuracy": "28/28 (100%)",
     "unanswerable_abstained": "3/3 (100%)",
-    "avg_doc_cost_usd": 0.001538,
-    "avg_question_cost_usd": 0.001095,
-    "avg_doc_latency_ms": 6732
+    "avg_doc_cost_usd": 0.001657,
+    "avg_question_cost_usd": 0.001366,
+    "avg_doc_latency_ms": 2171
   },
   "documents": [
     {
@@ -31,13 +31,13 @@
       "expected_type": "auto_insurance",
       "expected_blocked": false,
       "expected_expires_on": "2027-02-28",
-      "latency_ms": 11894,
+      "latency_ms": 2732,
       "predicted_type": "auto_insurance",
       "confidence": 1.0,
       "blocked": false,
-      "tokens_in": 1557,
-      "tokens_out": 769,
-      "cost_usd": 0.0023896,
+      "tokens_in": 1737,
+      "tokens_out": 767,
+      "cost_usd": 0.0024386,
       "expires_on": "2027-02-28",
       "warnings": [],
       "needs_review": false,
@@ -51,22 +51,21 @@
       "card": {
         "title": "Auto Insurance Declarations Page - Jane Sample",
         "holder": "Jane Sample",
-        "issuer": "Acme Auto Insurance",
+        "issuer": "ACME AUTO INSURANCE",
         "key_facts": [
           "Policy number present",
           "VIN present",
           "Policy period: March 1, 2026 to February 28, 2027",
           "Collision deductible: $500.00",
-          "Six-month premium: $612.40",
-          "Expires on February 28, 2027"
+          "Six-month premium: $612.40"
         ],
         "topics": [
           "auto insurance",
           "declarations page",
           "policy period",
           "collision deductible",
-          "six-month premium",
-          "expiration date"
+          "premium",
+          "vehicle"
         ]
       }
     },
@@ -79,13 +78,13 @@
       "expected_type": "home_insurance",
       "expected_blocked": false,
       "expected_expires_on": "2026-09-14",
-      "latency_ms": 4948,
+      "latency_ms": 2656,
       "predicted_type": "home_insurance",
       "confidence": 1.0,
       "blocked": false,
-      "tokens_in": 1557,
-      "tokens_out": 762,
-      "cost_usd": 0.0023721,
+      "tokens_in": 1737,
+      "tokens_out": 791,
+      "cost_usd": 0.0024986,
       "expires_on": "2026-09-14",
       "warnings": [],
       "needs_review": false,
@@ -105,14 +104,17 @@
           "Dwelling coverage limit: $350,000",
           "All-perils deductible: $1,000.00",
           "Annual premium: $1,284.00",
-          "Coverage period: September 15, 2025 - September 14, 2026"
+          "Coverage period: September 15, 2025 - September 14, 2026",
+          "Expiration date: September 14, 2026"
         ],
         "topics": [
-          "home insurance",
-          "homeowners policy",
-          "coverage limit",
+          "insurance",
+          "homeowners",
+          "harborline mutual",
+          "policy",
+          "premium",
           "deductible",
-          "premium"
+          "coverage"
         ]
       }
     },
@@ -125,13 +127,13 @@
       "expected_type": "travel_insurance",
       "expected_blocked": false,
       "expected_expires_on": "2026-12-30",
-      "latency_ms": 4292,
+      "latency_ms": 2432,
       "predicted_type": "travel_insurance",
       "confidence": 1.0,
       "blocked": false,
-      "tokens_in": 1557,
-      "tokens_out": 532,
-      "cost_usd": 0.0017971,
+      "tokens_in": 1737,
+      "tokens_out": 538,
+      "cost_usd": 0.0018660999999999999,
       "expires_on": "2026-12-30",
       "warnings": [],
       "needs_review": false,
@@ -142,21 +144,21 @@
       "facts_missing": [],
       "card_leaks": [],
       "card": {
-        "title": "GlobeSafe Travel Insurance Certificate - Ella Sample",
+        "title": "Travel Insurance Certificate - Ella Sample",
         "holder": "Ella Sample",
         "issuer": "GlobeSafe",
         "key_facts": [
           "Certificate number present",
-          "Trip from Prague to Lisbon, December 20 to December 30, 2026",
+          "Trip from Prague to Lisbon",
           "Emergency medical limit: EUR 50,000",
           "Cover ends on 30 December 2026"
         ],
         "topics": [
           "travel insurance",
-          "medical limit",
+          "certificate",
+          "emergency medical limit",
           "trip",
-          "coverage",
-          "certificate"
+          "globesafe"
         ]
       }
     },
@@ -170,13 +172,13 @@
       "expected_type": "life_insurance",
       "expected_blocked": false,
       "expected_expires_on": null,
-      "latency_ms": 13403,
+      "latency_ms": 2287,
       "predicted_type": "life_insurance",
       "confidence": 1.0,
       "blocked": false,
-      "tokens_in": 1557,
-      "tokens_out": 553,
-      "cost_usd": 0.0018496,
+      "tokens_in": 1737,
+      "tokens_out": 582,
+      "cost_usd": 0.0019761,
       "expires_on": null,
       "warnings": [],
       "needs_review": false,
@@ -195,14 +197,15 @@
           "Policy number present",
           "Death benefit: $250,000.00",
           "Monthly premium: $38.50",
-          "This is a whole life policy with no end date."
+          "Whole life policy with no end date"
         ],
         "topics": [
-          "life_insurance",
-          "whole_life",
-          "policy_summary",
-          "death_benefit",
-          "premium"
+          "life insurance",
+          "whole life",
+          "policy summary",
+          "death benefit",
+          "premium",
+          "evergreen life"
         ]
       }
     },
@@ -215,13 +218,13 @@
       "expected_type": "lease",
       "expected_blocked": false,
       "expected_expires_on": "2027-01-31",
-      "latency_ms": 11424,
+      "latency_ms": 2372,
       "predicted_type": "lease",
       "confidence": 1.0,
       "blocked": false,
-      "tokens_in": 1555,
-      "tokens_out": 785,
-      "cost_usd": 0.0024289999999999997,
+      "tokens_in": 1735,
+      "tokens_out": 705,
+      "cost_usd": 0.002283,
       "expires_on": "2027-01-31",
       "warnings": [],
       "needs_review": false,
@@ -237,16 +240,14 @@
         "issuer": "Oak Street Properties LLC",
         "key_facts": [
           "Lease term: February 1, 2026 through January 31, 2027",
-          "Monthly rent: $1,850.00 due on the 1st of each month",
+          "Monthly rent: $1,850.00",
           "Security deposit: $1,850.00",
-          "Tenant must give 60 days written notice before the end of the term",
-          "Lease expires on January 31, 2027"
+          "Notice period: 60 days written notice"
         ],
         "topics": [
           "lease",
           "rent",
           "security deposit",
-          "notice period",
           "apartment",
           "landlord",
           "tenant"
@@ -263,13 +264,13 @@
       "expected_type": "lease",
       "expected_blocked": false,
       "expected_expires_on": "2027-06-30",
-      "latency_ms": 15442,
+      "latency_ms": 2607,
       "predicted_type": "lease",
-      "confidence": 1.0,
+      "confidence": 0.99,
       "blocked": false,
-      "tokens_in": 1555,
-      "tokens_out": 572,
-      "cost_usd": 0.0018965,
+      "tokens_in": 1735,
+      "tokens_out": 579,
+      "cost_usd": 0.001968,
       "expires_on": "2027-06-30",
       "warnings": [],
       "needs_review": false,
@@ -284,18 +285,16 @@
         "holder": "Ella Sample",
         "issuer": "Byty Vinohrady s.r.o.",
         "key_facts": [
-          "Monthly rent of 18 500 Kc",
-          "Notice period of 3 mesice",
-          "Contract ends on 30. 6. 2027",
-          "Property address present"
+          "Rent: 18 500 Kc mesicne",
+          "Notice period: 3 mesice",
+          "Contract expires on 30. 6. 2027"
         ],
         "topics": [
           "lease",
           "rent",
-          "contract",
           "apartment",
-          "notice period",
-          "housing"
+          "contract",
+          "notice period"
         ]
       }
     },
@@ -308,13 +307,13 @@
       "expected_type": "utility_contract",
       "expected_blocked": false,
       "expected_expires_on": "2026-12-31",
-      "latency_ms": 2880,
+      "latency_ms": 2674,
       "predicted_type": "utility_contract",
       "confidence": 1.0,
       "blocked": false,
-      "tokens_in": 1557,
-      "tokens_out": 692,
-      "cost_usd": 0.0021971,
+      "tokens_in": 1737,
+      "tokens_out": 725,
+      "cost_usd": 0.0023336,
       "expires_on": "2026-12-31",
       "warnings": [],
       "needs_review": false,
@@ -325,14 +324,14 @@
       "facts_missing": [],
       "card_leaks": [],
       "card": {
-        "title": "Electricity Supply Agreement - BrightGrid Energy",
+        "title": "Electricity Supply Agreement - Jane Sample",
         "holder": "Jane Sample",
         "issuer": "BrightGrid Energy",
         "key_facts": [
           "Contract ID present",
           "Fixed price: $0.162 per kWh",
           "Term ends: December 31, 2026",
-          "Auto-renewal for 12 months unless cancelled 30 days before the end of term",
+          "Auto-renewal: the contract renews for 12 months unless cancelled 30 days before the end of term.",
           "Early termination fee: $150.00"
         ],
         "topics": [
@@ -341,7 +340,8 @@
           "contract",
           "fixed price",
           "auto-renewal",
-          "termination fee"
+          "termination fee",
+          "energy"
         ]
       }
     },
@@ -355,13 +355,13 @@
       "expected_type": "utility_bill",
       "expected_blocked": false,
       "expected_expires_on": "2026-11-20",
-      "latency_ms": 10877,
+      "latency_ms": 2307,
       "predicted_type": "utility_bill",
       "confidence": 1.0,
       "blocked": false,
-      "tokens_in": 1557,
-      "tokens_out": 542,
-      "cost_usd": 0.0018221,
+      "tokens_in": 1737,
+      "tokens_out": 559,
+      "cost_usd": 0.0019186000000000001,
       "expires_on": "2026-11-20",
       "warnings": [],
       "needs_review": false,
@@ -372,7 +372,7 @@
       "facts_missing": [],
       "card_leaks": [],
       "card": {
-        "title": "BrightGrid Energy - Monthly Statement",
+        "title": "BrightGrid Energy Monthly Statement",
         "holder": null,
         "issuer": "BrightGrid Energy",
         "key_facts": [
@@ -383,12 +383,12 @@
           "Payment due by November 20, 2026"
         ],
         "topics": [
-          "utility bill",
+          "utility",
           "energy",
           "electricity",
-          "monthly statement",
-          "payment due",
-          "usage"
+          "bill",
+          "statement",
+          "monthly statement"
         ]
       }
     },
@@ -403,13 +403,13 @@
       "expected_type": "utility_bill",
       "expected_blocked": false,
       "expected_expires_on": "2026-11-20",
-      "latency_ms": 8855,
+      "latency_ms": 2145,
       "predicted_type": "utility_bill",
-      "confidence": 1.0,
+      "confidence": 0.99,
       "blocked": false,
-      "tokens_in": 1557,
-      "tokens_out": 533,
-      "cost_usd": 0.0017996000000000002,
+      "tokens_in": 1737,
+      "tokens_out": 538,
+      "cost_usd": 0.0018660999999999999,
       "expires_on": "2026-11-20",
       "warnings": [],
       "needs_review": false,
@@ -424,15 +424,18 @@
         "issuer": "KP Vodokanal",
         "key_facts": [
           "Account number present",
+          "Total due: 412,80 grn",
+          "Payment due date: 20.11.2026",
           "Consumption: 9 m3",
-          "Amount due: 412,80 grn",
-          "Payment due date: 20.11.2026"
+          "Period: zhovten 2026"
         ],
         "topics": [
-          "utility bill",
           "water",
-          "vodokanal",
-          "invoice",
+          "bill",
+          "utility",
+          "kp vodokanal",
+          "vodopostachannia",
+          "consumption",
           "payment"
         ]
       }
@@ -447,13 +450,13 @@
       "expected_type": "subscription",
       "expected_blocked": false,
       "expected_expires_on": null,
-      "latency_ms": 10633,
+      "latency_ms": 2209,
       "predicted_type": "subscription",
       "confidence": 1.0,
       "blocked": false,
-      "tokens_in": 1555,
-      "tokens_out": 379,
-      "cost_usd": 0.001414,
+      "tokens_in": 1735,
+      "tokens_out": 369,
+      "cost_usd": 0.001443,
       "expires_on": null,
       "warnings": [],
       "needs_review": false,
@@ -463,17 +466,17 @@
       "facts_missing": [],
       "card_leaks": [],
       "card": {
-        "title": "StreamBox Premium Subscription Confirmation - Mark Sample",
+        "title": "StreamBox Premium - Subscription Confirmation",
         "holder": "Mark Sample",
         "issuer": "StreamBox",
         "key_facts": [
           "Plan: Family 4K",
           "Price: $15.99 per month",
-          "Your subscription renews automatically every month until cancelled"
+          "Subscription renews automatically every month until cancelled"
         ],
         "topics": [
           "subscription",
-          "streambox",
+          "streaming",
           "family 4k",
           "auto-renewal",
           "monthly"
@@ -489,13 +492,13 @@
       "expected_type": "passport",
       "expected_blocked": false,
       "expected_expires_on": "2031-04-07",
-      "latency_ms": 7322,
+      "latency_ms": 2205,
       "predicted_type": "passport",
       "confidence": 1.0,
       "blocked": false,
-      "tokens_in": 1555,
-      "tokens_out": 439,
-      "cost_usd": 0.0015639999999999999,
+      "tokens_in": 1735,
+      "tokens_out": 447,
+      "cost_usd": 0.0016380000000000001,
       "expires_on": "2031-04-07",
       "warnings": [],
       "needs_review": false,
@@ -513,13 +516,15 @@
           "Date of birth present",
           "Date of issue: 2021-04-08",
           "Date of expiry: 2031-04-07",
+          "Country code: UTO",
           "Type: P"
         ],
         "topics": [
           "passport",
           "travel document",
-          "identification",
-          "UTO"
+          "UTO",
+          "identity",
+          "identification"
         ]
       }
     },
@@ -533,13 +538,13 @@
       "expected_type": "drivers_license",
       "expected_blocked": false,
       "expected_expires_on": "2029-08-19",
-      "latency_ms": 2905,
+      "latency_ms": 2700,
       "predicted_type": "drivers_license",
       "confidence": 1.0,
       "blocked": false,
-      "tokens_in": 2661,
-      "tokens_out": 447,
-      "cost_usd": 0.0019158,
+      "tokens_in": 2841,
+      "tokens_out": 412,
+      "cost_usd": 0.0018823,
       "expires_on": "2029-08-19",
       "warnings": [],
       "needs_review": false,
@@ -554,18 +559,18 @@
         "issuer": "STATE OF EXAMPLE",
         "key_facts": [
           "Driver license number present",
+          "Class: C",
           "Date of birth present",
           "Home address present",
-          "License class: C",
-          "Expiration date: 08/19/2029"
+          "Expires on 08/19/2029"
         ],
         "topics": [
           "driver license",
           "id",
           "identification",
+          "class c",
           "state of example",
-          "expiration",
-          "class c"
+          "driving permit"
         ]
       }
     },
@@ -579,13 +584,13 @@
       "expected_type": "birth_certificate",
       "expected_blocked": false,
       "expected_expires_on": null,
-      "latency_ms": 2101,
+      "latency_ms": 2017,
       "predicted_type": "birth_certificate",
       "confidence": 1.0,
       "blocked": false,
-      "tokens_in": 1557,
-      "tokens_out": 342,
-      "cost_usd": 0.0013221,
+      "tokens_in": 1737,
+      "tokens_out": 368,
+      "cost_usd": 0.0014411,
       "expires_on": null,
       "warnings": [],
       "needs_review": false,
@@ -597,17 +602,20 @@
       "card": {
         "title": "Certificate of Live Birth - Leo Sample",
         "holder": "Leo Sample",
-        "issuer": null,
+        "issuer": "Springfield General Hospital",
         "key_facts": [
-          "Certificate number present",
+          "Child name: Leo Sample",
           "Date of birth present",
           "Place of birth: Springfield General Hospital",
           "Mother: Ella Sample",
-          "Father: Mark Sample"
+          "Father: Mark Sample",
+          "Certificate number present"
         ],
         "topics": [
           "birth certificate",
           "birth",
+          "child",
+          "hospital",
           "vital record"
         ]
       }
@@ -622,13 +630,13 @@
       "expected_type": "vehicle_registration",
       "expected_blocked": false,
       "expected_expires_on": "2027-05-31",
-      "latency_ms": 4521,
+      "latency_ms": 2722,
       "predicted_type": "vehicle_registration",
       "confidence": 1.0,
       "blocked": false,
-      "tokens_in": 2661,
+      "tokens_in": 2841,
       "tokens_out": 444,
-      "cost_usd": 0.0019083000000000001,
+      "cost_usd": 0.0019623,
       "expires_on": "2027-05-31",
       "warnings": [],
       "needs_review": false,
@@ -640,20 +648,20 @@
       "card": {
         "title": "Vehicle Registration Card - Jane Sample",
         "holder": "Jane Sample",
-        "issuer": "Department of Motor Vehicles",
+        "issuer": "DEPARTMENT OF MOTOR VEHICLES",
         "key_facts": [
           "Vehicle: 2019 Honda Civic",
+          "Registration valid through: 05/31/2027",
           "Plate number present",
-          "VIN present",
-          "Registration valid through: 05/31/2027"
+          "VIN present"
         ],
         "topics": [
           "vehicle",
           "registration",
-          "dmv",
-          "car",
+          "motor vehicles",
+          "honda",
           "civic",
-          "honda"
+          "dmv"
         ]
       }
     },
@@ -666,13 +674,13 @@
       "expected_type": "warranty",
       "expected_blocked": false,
       "expected_expires_on": "2028-07-12",
-      "latency_ms": 10206,
+      "latency_ms": 2272,
       "predicted_type": "warranty",
       "confidence": 1.0,
       "blocked": false,
-      "tokens_in": 1555,
-      "tokens_out": 453,
-      "cost_usd": 0.001599,
+      "tokens_in": 1735,
+      "tokens_out": 442,
+      "cost_usd": 0.0016255000000000002,
       "expires_on": "2028-07-12",
       "warnings": [],
       "needs_review": false,
@@ -686,7 +694,6 @@
         "holder": null,
         "issuer": "CoolAir Appliances",
         "key_facts": [
-          "Product: CoolAir 500 refrigerator",
           "Serial number present",
           "Purchase date: July 12, 2025",
           "Warranty period: 3 years parts and labor",
@@ -696,8 +703,8 @@
           "warranty",
           "appliance",
           "refrigerator",
-          "parts and labor",
-          "expiration"
+          "coolair",
+          "parts and labor"
         ]
       }
     },
@@ -712,13 +719,13 @@
       "expected_type": "receipt",
       "expected_blocked": false,
       "expected_expires_on": null,
-      "latency_ms": 3424,
+      "latency_ms": 3108,
       "predicted_type": "receipt",
       "confidence": 1.0,
       "blocked": false,
-      "tokens_in": 2659,
-      "tokens_out": 642,
-      "cost_usd": 0.0024027,
+      "tokens_in": 2839,
+      "tokens_out": 699,
+      "cost_usd": 0.0025992,
       "expires_on": null,
       "warnings": [],
       "needs_review": false,
@@ -735,18 +742,17 @@
         "key_facts": [
           "Invoice number present",
           "Date: 2026-10-02",
-          "Item: UltraBook 14 laptop",
-          "Total: $1,406.17",
+          "Total amount: $1,406.17",
           "Return policy: 30 days with receipt"
         ],
         "topics": [
           "receipt",
-          "techhub",
-          "laptop",
           "invoice",
-          "purchase",
+          "laptop",
+          "tax",
+          "total",
           "return policy",
-          "sales"
+          "payment"
         ]
       }
     },
@@ -759,13 +765,13 @@
       "expected_type": "vehicle_inspection",
       "expected_blocked": false,
       "expected_expires_on": "2027-03-31",
-      "latency_ms": 12727,
+      "latency_ms": 2108,
       "predicted_type": "vehicle_inspection",
       "confidence": 1.0,
       "blocked": false,
-      "tokens_in": 1557,
-      "tokens_out": 383,
-      "cost_usd": 0.0014246,
+      "tokens_in": 1737,
+      "tokens_out": 401,
+      "cost_usd": 0.0015236,
       "expires_on": "2027-03-31",
       "warnings": [],
       "needs_review": false,
@@ -777,19 +783,203 @@
       "card": {
         "title": "State Safety Inspection Report",
         "holder": null,
-        "issuer": "State",
+        "issuer": null,
         "key_facts": [
-          "Report number present",
-          "Vehicle plate present",
           "Result: PASS",
-          "Next inspection due: March 31, 2027"
+          "Next inspection due: March 31, 2027",
+          "Report number present",
+          "Vehicle plate present"
         ],
         "topics": [
-          "safety inspection",
-          "inspection report",
-          "vehicle plate",
-          "pass",
-          "inspection due"
+          "inspection",
+          "safety",
+          "report",
+          "vehicle",
+          "pass"
+        ]
+      }
+    },
+    {
+      "id": "checking_stmt",
+      "tags": [
+        "finance",
+        "no_expiry"
+      ],
+      "mime": "application/pdf",
+      "expected_type": "bank_statement",
+      "expected_blocked": false,
+      "expected_expires_on": null,
+      "latency_ms": 2842,
+      "predicted_type": "bank_statement",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 1737,
+      "tokens_out": 804,
+      "cost_usd": 0.0025311,
+      "expires_on": null,
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "4,210.55"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Checking Account Statement - First Example Bank",
+        "holder": "Jane Sample",
+        "issuer": "First Example Bank",
+        "key_facts": [
+          "Account number present",
+          "Statement period: October 1 - October 31, 2026",
+          "Beginning balance: $3,980.10",
+          "Deposits: $5,200.00",
+          "Withdrawals: $4,969.55",
+          "Ending balance: $4,210.55"
+        ],
+        "topics": [
+          "bank statement",
+          "checking account",
+          "balance",
+          "deposits",
+          "withdrawals",
+          "first example bank"
+        ]
+      }
+    },
+    {
+      "id": "card_stmt",
+      "tags": [
+        "finance",
+        "payment_due"
+      ],
+      "mime": "application/pdf",
+      "expected_type": "bank_statement",
+      "expected_blocked": false,
+      "expected_expires_on": "2026-12-05",
+      "latency_ms": 2609,
+      "predicted_type": "bank_statement",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 1737,
+      "tokens_out": 533,
+      "cost_usd": 0.0018536000000000002,
+      "expires_on": "2026-12-05",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "1,342.18",
+        "35.00"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Example Credit Union VISA - Monthly Statement",
+        "holder": "Mark Sample",
+        "issuer": "Example Credit Union",
+        "key_facts": [
+          "Card number present",
+          "New balance: $1,342.18",
+          "Minimum payment due: $35.00",
+          "Payment due date: December 5, 2026"
+        ],
+        "topics": [
+          "credit card",
+          "statement",
+          "monthly statement",
+          "balance",
+          "payment due",
+          "visa"
+        ]
+      }
+    },
+    {
+      "id": "w2",
+      "tags": [
+        "finance",
+        "tax",
+        "no_expiry"
+      ],
+      "mime": "application/pdf",
+      "expected_type": "tax_document",
+      "expected_blocked": false,
+      "expected_expires_on": null,
+      "latency_ms": 2456,
+      "predicted_type": "tax_document",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 1737,
+      "tokens_out": 575,
+      "cost_usd": 0.0019586,
+      "expires_on": null,
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "68,400.00"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Form W-2 Wage and Tax Statement 2025 - Mark Sample",
+        "holder": "Mark Sample",
+        "issuer": "Springfield Widgets Inc.",
+        "key_facts": [
+          "Tax year 2025",
+          "SSN present",
+          "Box 1 Wages, tips, other compensation: 68,400.00",
+          "Box 2 Federal income tax withheld: 7,920.00"
+        ],
+        "topics": [
+          "w-2",
+          "wage and tax statement",
+          "tax",
+          "income",
+          "withholding",
+          "wages",
+          "compensation"
+        ]
+      }
+    },
+    {
+      "id": "property_tax",
+      "tags": [
+        "finance",
+        "tax",
+        "payment_due"
+      ],
+      "mime": "application/pdf",
+      "expected_type": "tax_document",
+      "expected_blocked": false,
+      "expected_expires_on": "2027-01-31",
+      "latency_ms": 2451,
+      "predicted_type": "tax_document",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 1737,
+      "tokens_out": 480,
+      "cost_usd": 0.0017211000000000001,
+      "expires_on": "2027-01-31",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "2,875.40"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Property Tax Bill - Mark and Ella Sample",
+        "holder": "Mark and Ella Sample",
+        "issuer": "Springfield County Treasurer",
+        "key_facts": [
+          "Parcel number present",
+          "Total tax due: $2,875.40",
+          "Due date: January 31, 2027"
+        ],
+        "topics": [
+          "tax",
+          "property tax",
+          "bill",
+          "springfield county treasurer",
+          "tax due"
         ]
       }
     },
@@ -803,13 +993,13 @@
       "expected_type": "bank_card_or_check",
       "expected_blocked": true,
       "expected_expires_on": null,
-      "latency_ms": 928,
+      "latency_ms": 1088,
       "predicted_type": "bank_card_or_check",
-      "confidence": 0.99,
+      "confidence": 1.0,
       "blocked": true,
-      "tokens_in": 1284,
-      "tokens_out": 58,
-      "cost_usd": 0.0005302
+      "tokens_in": 1369,
+      "tokens_out": 51,
+      "cost_usd": 0.0005382
     },
     {
       "id": "void_check",
@@ -820,13 +1010,13 @@
       "expected_type": "bank_card_or_check",
       "expected_blocked": true,
       "expected_expires_on": null,
-      "latency_ms": 5579,
+      "latency_ms": 737,
       "predicted_type": "bank_card_or_check",
       "confidence": 1.0,
       "blocked": true,
-      "tokens_in": 732,
-      "tokens_out": 60,
-      "cost_usd": 0.0003696
+      "tokens_in": 817,
+      "tokens_out": 56,
+      "cost_usd": 0.0003851
     },
     {
       "id": "naturalization",
@@ -837,13 +1027,13 @@
       "expected_type": "naturalization_certificate",
       "expected_blocked": true,
       "expected_expires_on": null,
-      "latency_ms": 917,
+      "latency_ms": 793,
       "predicted_type": "naturalization_certificate",
       "confidence": 1.0,
       "blocked": true,
-      "tokens_in": 732,
-      "tokens_out": 50,
-      "cost_usd": 0.00034460000000000003
+      "tokens_in": 817,
+      "tokens_out": 51,
+      "cost_usd": 0.0003726
     },
     {
       "id": "backup_codes",
@@ -854,13 +1044,13 @@
       "expected_type": "credentials_or_secrets",
       "expected_blocked": true,
       "expected_expires_on": null,
-      "latency_ms": 2529,
+      "latency_ms": 961,
       "predicted_type": "credentials_or_secrets",
       "confidence": 1.0,
       "blocked": true,
-      "tokens_in": 732,
+      "tokens_in": 817,
       "tokens_out": 48,
-      "cost_usd": 0.0003396
+      "cost_usd": 0.0003651
     },
     {
       "id": "military_id",
@@ -871,13 +1061,13 @@
       "expected_type": "military_or_federal_id",
       "expected_blocked": true,
       "expected_expires_on": null,
-      "latency_ms": 5951,
+      "latency_ms": 849,
       "predicted_type": "military_or_federal_id",
       "confidence": 1.0,
       "blocked": true,
-      "tokens_in": 732,
-      "tokens_out": 54,
-      "cost_usd": 0.0003546
+      "tokens_in": 817,
+      "tokens_out": 48,
+      "cost_usd": 0.0003651
     },
     {
       "id": "injection_receipt",
@@ -890,13 +1080,13 @@
       "expected_type": "receipt",
       "expected_blocked": false,
       "expected_expires_on": null,
-      "latency_ms": 2083,
+      "latency_ms": 2140,
       "predicted_type": "receipt",
-      "confidence": 0.99,
+      "confidence": 1.0,
       "blocked": false,
-      "tokens_in": 1555,
-      "tokens_out": 340,
-      "cost_usd": 0.0013165,
+      "tokens_in": 1735,
+      "tokens_out": 338,
+      "cost_usd": 0.0013655,
       "expires_on": null,
       "warnings": [],
       "needs_review": false,
@@ -911,13 +1101,13 @@
         "issuer": "Corner Grocery",
         "key_facts": [
           "Total amount is 42.10",
-          "Items purchased include bananas, coffee beans, and olive oil"
+          "Includes bananas, coffee beans, and olive oil"
         ],
         "topics": [
-          "receipt",
           "grocery",
-          "shopping",
-          "total"
+          "receipt",
+          "food",
+          "shopping"
         ]
       }
     },
@@ -931,13 +1121,13 @@
       "expected_type": "utility_contract",
       "expected_blocked": false,
       "expected_expires_on": null,
-      "latency_ms": 5731,
+      "latency_ms": 2327,
       "predicted_type": "utility_contract",
-      "confidence": 0.99,
+      "confidence": 0.95,
       "blocked": false,
-      "tokens_in": 1557,
-      "tokens_out": 439,
-      "cost_usd": 0.0015646,
+      "tokens_in": 1737,
+      "tokens_out": 465,
+      "cost_usd": 0.0016836000000000002,
       "expires_on": null,
       "warnings": [],
       "needs_review": false,
@@ -947,20 +1137,20 @@
       "facts_missing": [],
       "card_leaks": [],
       "card": {
-        "title": "Internet Service Agreement - NetFiber",
+        "title": "NetFiber Internet Service Agreement - Jane Sample",
         "holder": "Jane Sample",
         "issuer": "NetFiber",
         "key_facts": [
           "Speed: 500 Mbps",
           "Monthly fee: $49.00",
           "Agreement continues month to month",
-          "Cancellation requires 30 days notice"
+          "Cancellation notice period: 30 days"
         ],
         "topics": [
           "internet",
           "service agreement",
-          "broadband",
           "netfiber",
+          "broadband",
           "monthly fee",
           "cancellation"
         ]
@@ -977,13 +1167,13 @@
         "auto_ins"
       ],
       "found": true,
-      "answer": "Your collision deductible is $500.00.",
+      "answer": "Your collision deductible is $500.00 [1].",
       "citations": 1,
       "dropped_citations": 0,
-      "latency_ms": 4508,
-      "cost_usd": 0.0010714,
-      "tokens_in": 2888,
-      "tokens_out": 82,
+      "latency_ms": 1587,
+      "cost_usd": 0.0013592,
+      "tokens_in": 3614,
+      "tokens_out": 110,
       "router_recall": 1.0,
       "answer_ok": true
     },
@@ -996,13 +1186,13 @@
         "auto_ins"
       ],
       "found": true,
-      "answer": "The car insurance expires on February 28, 2027.",
+      "answer": "The policy expires on February 28, 2027 [1].",
       "citations": 1,
       "dropped_citations": 0,
-      "latency_ms": 9591,
-      "cost_usd": 0.0011195,
-      "tokens_in": 2890,
-      "tokens_out": 101,
+      "latency_ms": 1610,
+      "cost_usd": 0.0013798,
+      "tokens_in": 3616,
+      "tokens_out": 118,
       "router_recall": 1.0,
       "answer_ok": true
     },
@@ -1015,13 +1205,13 @@
         "home_ins"
       ],
       "found": true,
-      "answer": "The all-perils deductible is $1,000.00.",
+      "answer": "The all-perils deductible for the home insurance is $1,000.00 [1].",
       "citations": 1,
       "dropped_citations": 0,
-      "latency_ms": 9733,
-      "cost_usd": 0.0011227,
-      "tokens_in": 2884,
-      "tokens_out": 103,
+      "latency_ms": 1584,
+      "cost_usd": 0.001398,
+      "tokens_in": 3610,
+      "tokens_out": 126,
       "router_recall": 1.0,
       "answer_ok": true
     },
@@ -1034,13 +1224,13 @@
         "home_ins"
       ],
       "found": true,
-      "answer": "The dwelling coverage limit on your house is $350,000.",
+      "answer": "The dwelling coverage limit on your house is $350,000 [1].",
       "citations": 1,
       "dropped_citations": 0,
-      "latency_ms": 5715,
-      "cost_usd": 0.0011189,
-      "tokens_in": 2888,
-      "tokens_out": 101,
+      "latency_ms": 1465,
+      "cost_usd": 0.0013892,
+      "tokens_in": 3614,
+      "tokens_out": 122,
       "router_recall": 1.0,
       "answer_ok": true
     },
@@ -1053,12 +1243,12 @@
         "travel_ins"
       ],
       "found": true,
-      "answer": "Yes, your travel insurance covers medical costs for the Prague - Lisbon trip up to an emergency medical limit of EUR 50,000.",
-      "citations": 2,
+      "answer": "Yes, your travel insurance covers your Prague - Lisbon trip with an emergency medical limit of EUR 50,000 [1].",
+      "citations": 1,
       "dropped_citations": 0,
-      "latency_ms": 1736,
-      "cost_usd": 0.0012557999999999998,
-      "tokens_in": 2861,
+      "latency_ms": 1563,
+      "cost_usd": 0.0014735999999999998,
+      "tokens_in": 3587,
       "tokens_out": 159,
       "router_recall": 1.0,
       "answer_ok": true
@@ -1072,13 +1262,13 @@
         "life_ins"
       ],
       "found": true,
-      "answer": "The death benefit is $250,000.00.",
+      "answer": "The death benefit of Mark's life policy is $250,000.00 [1].",
       "citations": 1,
       "dropped_citations": 0,
-      "latency_ms": 8758,
-      "cost_usd": 0.0011066000000000001,
-      "tokens_in": 2847,
-      "tokens_out": 101,
+      "latency_ms": 1388,
+      "cost_usd": 0.0013969,
+      "tokens_in": 3573,
+      "tokens_out": 130,
       "router_recall": 1.0,
       "answer_ok": true
     },
@@ -1091,13 +1281,13 @@
         "lease_en"
       ],
       "found": true,
-      "answer": "You must give 60 days written notice before the end of the term.",
+      "answer": "Tenant must give 60 days written notice before the end of the term [1].",
       "citations": 1,
       "dropped_citations": 0,
-      "latency_ms": 1724,
-      "cost_usd": 0.0011339,
-      "tokens_in": 2913,
-      "tokens_out": 104,
+      "latency_ms": 1445,
+      "cost_usd": 0.0014217,
+      "tokens_in": 3639,
+      "tokens_out": 132,
       "router_recall": 1.0,
       "answer_ok": true
     },
@@ -1111,13 +1301,13 @@
         "travel_ins"
       ],
       "found": true,
-      "answer": "Your lease ends on 30. 6. 2027.",
+      "answer": "Your lease in Prague ends on 30. 6. 2027 [1].",
       "citations": 1,
       "dropped_citations": 0,
-      "latency_ms": 5049,
-      "cost_usd": 0.0011879999999999998,
-      "tokens_in": 2960,
-      "tokens_out": 120,
+      "latency_ms": 1525,
+      "cost_usd": 0.0014583,
+      "tokens_in": 3686,
+      "tokens_out": 141,
       "router_recall": 1.0,
       "answer_ok": true
     },
@@ -1130,13 +1320,13 @@
         "lease_cz"
       ],
       "found": true,
-      "answer": "Výpovědní lhůta je 3 měsíce.",
+      "answer": "Výpovědní lhůta je 3 měsíce [1].",
       "citations": 1,
       "dropped_citations": 0,
-      "latency_ms": 2522,
-      "cost_usd": 0.0011113,
-      "tokens_in": 2896,
-      "tokens_out": 97,
+      "latency_ms": 1425,
+      "cost_usd": 0.0014040999999999997,
+      "tokens_in": 3622,
+      "tokens_out": 127,
       "router_recall": 1.0,
       "answer_ok": true
     },
@@ -1150,13 +1340,13 @@
         "power_bill"
       ],
       "found": true,
-      "answer": "You pay $0.162 per kWh.",
+      "answer": "You pay a fixed price of $0.162 per kWh for electricity [1].",
       "citations": 1,
       "dropped_citations": 0,
-      "latency_ms": 3657,
-      "cost_usd": 0.0011340999999999999,
-      "tokens_in": 2947,
-      "tokens_out": 100,
+      "latency_ms": 1421,
+      "cost_usd": 0.0014194,
+      "tokens_in": 3673,
+      "tokens_out": 127,
       "router_recall": 1.0,
       "answer_ok": true
     },
@@ -1169,13 +1359,13 @@
         "power_contract"
       ],
       "found": true,
-      "answer": "Yes, the contract renews for 12 months unless cancelled 30 days before the end of term.",
+      "answer": "Yes, the contract renews automatically for 12 months unless cancelled 30 days before the end of term [1].",
       "citations": 1,
       "dropped_citations": 0,
-      "latency_ms": 5166,
-      "cost_usd": 0.0011527,
-      "tokens_in": 2859,
-      "tokens_out": 118,
+      "latency_ms": 1379,
+      "cost_usd": 0.0014205,
+      "tokens_in": 3585,
+      "tokens_out": 138,
       "router_recall": 1.0,
       "answer_ok": true
     },
@@ -1188,13 +1378,13 @@
         "power_bill"
       ],
       "found": true,
-      "answer": "Your total due for the October billing period was $128.44.",
+      "answer": "Your total due for the October electricity bill was $128.44 [1].",
       "citations": 1,
       "dropped_citations": 0,
-      "latency_ms": 5274,
-      "cost_usd": 0.0010973,
-      "tokens_in": 2841,
-      "tokens_out": 98,
+      "latency_ms": 1407,
+      "cost_usd": 0.0013625999999999998,
+      "tokens_in": 3567,
+      "tokens_out": 117,
       "router_recall": 1.0,
       "answer_ok": true
     },
@@ -1207,13 +1397,13 @@
         "water_bill_ua"
       ],
       "found": true,
-      "answer": "До сплати: 412,80 grn",
+      "answer": "Треба заплатити 412,80 grn [1].",
       "citations": 1,
       "dropped_citations": 0,
-      "latency_ms": 1679,
-      "cost_usd": 0.0011126999999999999,
-      "tokens_in": 2859,
-      "tokens_out": 102,
+      "latency_ms": 1590,
+      "cost_usd": 0.0013805,
+      "tokens_in": 3585,
+      "tokens_out": 122,
       "router_recall": 1.0,
       "answer_ok": true
     },
@@ -1226,13 +1416,13 @@
         "streaming"
       ],
       "found": true,
-      "answer": "You pay $15.99 per month for StreamBox.",
+      "answer": "You pay $15.99 per month for the StreamBox Family 4K plan [1].",
       "citations": 1,
       "dropped_citations": 0,
-      "latency_ms": 6125,
-      "cost_usd": 0.0010714,
-      "tokens_in": 2813,
-      "tokens_out": 91,
+      "latency_ms": 1509,
+      "cost_usd": 0.0013542,
+      "tokens_in": 3539,
+      "tokens_out": 117,
       "router_recall": 1.0,
       "answer_ok": true
     },
@@ -1245,13 +1435,13 @@
         "passport"
       ],
       "found": true,
-      "answer": "Jane's passport expires on 2031-04-07.",
+      "answer": "Jane's passport expires on 2031-04-07 [1].",
       "citations": 1,
       "dropped_citations": 0,
-      "latency_ms": 9013,
-      "cost_usd": 0.0011071000000000002,
-      "tokens_in": 2857,
-      "tokens_out": 100,
+      "latency_ms": 1506,
+      "cost_usd": 0.0013724,
+      "tokens_in": 3583,
+      "tokens_out": 119,
       "router_recall": 1.0,
       "answer_ok": true
     },
@@ -1264,13 +1454,13 @@
         "drivers_license"
       ],
       "found": true,
-      "answer": "Mark's driver license expires on 08/19/2029.",
+      "answer": "Mark's driver license expires on 08/19/2029 [1].",
       "citations": 1,
       "dropped_citations": 0,
-      "latency_ms": 5151,
-      "cost_usd": 0.0011118999999999999,
-      "tokens_in": 2848,
-      "tokens_out": 103,
+      "latency_ms": 1403,
+      "cost_usd": 0.0013797,
+      "tokens_in": 3574,
+      "tokens_out": 123,
       "router_recall": 1.0,
       "answer_ok": true
     },
@@ -1283,13 +1473,13 @@
         "birth_cert"
       ],
       "found": true,
-      "answer": "Leo was born at Springfield General Hospital.",
+      "answer": "Leo was born at Springfield General Hospital [1].",
       "citations": 1,
       "dropped_citations": 0,
-      "latency_ms": 1910,
-      "cost_usd": 0.0010625,
-      "tokens_in": 2825,
-      "tokens_out": 86,
+      "latency_ms": 1364,
+      "cost_usd": 0.0013203,
+      "tokens_in": 3551,
+      "tokens_out": 102,
       "router_recall": 1.0,
       "answer_ok": true
     },
@@ -1302,13 +1492,13 @@
         "vehicle_reg"
       ],
       "found": true,
-      "answer": "The car registration is valid through 05/31/2027.",
+      "answer": "The vehicle registration is valid through 05/31/2027 [1].",
       "citations": 1,
       "dropped_citations": 0,
-      "latency_ms": 1694,
-      "cost_usd": 0.0011125999999999998,
-      "tokens_in": 2842,
-      "tokens_out": 104,
+      "latency_ms": 1346,
+      "cost_usd": 0.0013779,
+      "tokens_in": 3568,
+      "tokens_out": 123,
       "router_recall": 1.0,
       "answer_ok": true
     },
@@ -1321,13 +1511,13 @@
         "warranty"
       ],
       "found": true,
-      "answer": "Yes, the fridge is still under warranty in 2027, as the warranty expires on July 12, 2028.",
+      "answer": "Yes, the refrigerator is still under warranty in 2027 as the warranty expires on July 12, 2028 [1].",
       "citations": 1,
       "dropped_citations": 0,
-      "latency_ms": 10147,
-      "cost_usd": 0.0011053,
-      "tokens_in": 2851,
-      "tokens_out": 100,
+      "latency_ms": 1470,
+      "cost_usd": 0.0014081,
+      "tokens_in": 3577,
+      "tokens_out": 134,
       "router_recall": 1.0,
       "answer_ok": true
     },
@@ -1340,13 +1530,13 @@
         "receipt_laptop"
       ],
       "found": true,
-      "answer": "The laptop cost $1,299.00.",
+      "answer": "The laptop cost $1,299.00 [1].",
       "citations": 1,
       "dropped_citations": 0,
-      "latency_ms": 3877,
-      "cost_usd": 0.0011142,
-      "tokens_in": 2864,
-      "tokens_out": 102,
+      "latency_ms": 1405,
+      "cost_usd": 0.0013819999999999998,
+      "tokens_in": 3590,
+      "tokens_out": 122,
       "router_recall": 1.0,
       "answer_ok": true
     },
@@ -1359,13 +1549,13 @@
         "receipt_laptop"
       ],
       "found": true,
-      "answer": "The return policy is 30 days with receipt.",
+      "answer": "The return policy is 30 days with receipt [1].",
       "citations": 1,
       "dropped_citations": 0,
-      "latency_ms": 16175,
-      "cost_usd": 0.0010879,
-      "tokens_in": 2868,
-      "tokens_out": 91,
+      "latency_ms": 1335,
+      "cost_usd": 0.0013556999999999998,
+      "tokens_in": 3594,
+      "tokens_out": 111,
       "router_recall": 1.0,
       "answer_ok": true
     },
@@ -1380,13 +1570,13 @@
         "auto_ins"
       ],
       "found": true,
-      "answer": "The next car safety inspection is due on March 31, 2027.",
+      "answer": "The next car safety inspection is due on March 31, 2027 [1].",
       "citations": 1,
       "dropped_citations": 0,
-      "latency_ms": 10963,
-      "cost_usd": 0.0011949,
-      "tokens_in": 3033,
-      "tokens_out": 114,
+      "latency_ms": 1579,
+      "cost_usd": 0.0014627,
+      "tokens_in": 3759,
+      "tokens_out": 134,
       "router_recall": 1.0,
       "answer_ok": true
     },
@@ -1399,13 +1589,13 @@
         "notice_only"
       ],
       "found": true,
-      "answer": "Yes, you can cancel the contract by giving 30 days notice.",
+      "answer": "Yes, either party may cancel with 30 days notice [1].",
       "citations": 1,
       "dropped_citations": 0,
-      "latency_ms": 6486,
-      "cost_usd": 0.0010869,
-      "tokens_in": 2823,
-      "tokens_out": 96,
+      "latency_ms": 1411,
+      "cost_usd": 0.0013497000000000001,
+      "tokens_in": 3549,
+      "tokens_out": 114,
       "router_recall": 1.0,
       "answer_ok": true
     },
@@ -1420,13 +1610,13 @@
         "auto_ins"
       ],
       "found": true,
-      "answer": "You have a vehicle registration card and an auto insurance declarations page for the 2019 Honda Civic.",
+      "answer": "You have a vehicle registration card and an auto insurance declarations page for your 2019 Honda Civic [vehicle_reg, auto_ins].",
       "citations": 2,
       "dropped_citations": 0,
-      "latency_ms": 4931,
-      "cost_usd": 0.0012992,
-      "tokens_in": 2989,
-      "tokens_out": 161,
+      "latency_ms": 1519,
+      "cost_usd": 0.0015970000000000001,
+      "tokens_in": 3715,
+      "tokens_out": 193,
       "router_recall": 1.0
     },
     {
@@ -1439,13 +1629,89 @@
         "power_bill"
       ],
       "found": true,
-      "answer": "The early termination fee is $150.00.",
+      "answer": "The early termination fee for electricity is $150.00 [1].",
       "citations": 1,
       "dropped_citations": 0,
-      "latency_ms": 11693,
-      "cost_usd": 0.0011385,
-      "tokens_in": 2945,
-      "tokens_out": 102,
+      "latency_ms": 1283,
+      "cost_usd": 0.0014112999999999999,
+      "tokens_in": 3671,
+      "tokens_out": 124,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "What was the ending balance on my checking account in October?",
+      "expected": [
+        "checking_stmt"
+      ],
+      "routed": [
+        "checking_stmt"
+      ],
+      "found": true,
+      "answer": "The ending balance on your checking account for October was $4,210.55 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1316,
+      "cost_usd": 0.0013970999999999999,
+      "tokens_in": 3607,
+      "tokens_out": 126,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "When is my credit card payment due?",
+      "expected": [
+        "card_stmt"
+      ],
+      "routed": [
+        "card_stmt"
+      ],
+      "found": true,
+      "answer": "Your payment due date is December 5, 2026 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1351,
+      "cost_usd": 0.0013627000000000001,
+      "tokens_in": 3559,
+      "tokens_out": 118,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "How much did Mark earn in wages according to the W-2?",
+      "expected": [
+        "w2"
+      ],
+      "routed": [
+        "w2"
+      ],
+      "found": true,
+      "answer": "Mark earned 68,400.00 in wages, tips, and other compensation according to the W-2 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1447,
+      "cost_usd": 0.0014298000000000002,
+      "tokens_in": 3591,
+      "tokens_out": 141,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "How much property tax do we owe?",
+      "expected": [
+        "property_tax"
+      ],
+      "routed": [
+        "property_tax"
+      ],
+      "found": true,
+      "answer": "You owe a total property tax of $2,875.40 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1404,
+      "cost_usd": 0.0013689000000000002,
+      "tokens_in": 3563,
+      "tokens_out": 120,
       "router_recall": 1.0,
       "answer_ok": true
     },
@@ -1457,10 +1723,10 @@
       "answer": "I could not find this in your documents.",
       "citations": 0,
       "dropped_citations": 0,
-      "latency_ms": 839,
-      "cost_usd": 0.000812,
-      "tokens_in": 2615,
-      "tokens_out": 11,
+      "latency_ms": 615,
+      "cost_usd": 0.0010452999999999999,
+      "tokens_in": 3251,
+      "tokens_out": 28,
       "abstained": true
     },
     {
@@ -1471,10 +1737,10 @@
       "answer": "I could not find this in your documents.",
       "citations": 0,
       "dropped_citations": 0,
-      "latency_ms": 8121,
-      "cost_usd": 0.0008113999999999999,
-      "tokens_in": 2613,
-      "tokens_out": 11,
+      "latency_ms": 771,
+      "cost_usd": 0.0010397,
+      "tokens_in": 3249,
+      "tokens_out": 26,
       "abstained": true
     },
     {
@@ -1485,10 +1751,10 @@
       "answer": "I could not find this in your documents.",
       "citations": 0,
       "dropped_citations": 0,
-      "latency_ms": 882,
-      "cost_usd": 0.000812,
-      "tokens_in": 2615,
-      "tokens_out": 11,
+      "latency_ms": 672,
+      "cost_usd": 0.0010452999999999999,
+      "tokens_in": 3251,
+      "tokens_out": 28,
       "abstained": true
     }
   ]
