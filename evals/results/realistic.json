@@ -1,25 +1,27 @@
 {
-  "run_at": "2026-11-21T15:15:26+00:00",
+  "run_at": "2026-11-21T15:29:32+00:00",
   "model": "gemini-3.5-flash-lite (main), gemini-3.5-flash-lite (router)",
-  "prompt_version": "2026-11-21.6",
+  "prompt_version": "2026-11-21.7",
   "summary": {
-    "documents": 18,
+    "documents": 22,
     "errors": 0,
-    "classification_accuracy": "18/18 (100%)",
+    "classification_accuracy": "22/22 (100%)",
     "blacklist_recall": "3/3 (100%)",
-    "false_blocks": "0/15 (0%)",
-    "expiry_exact": "15/15 (100%)",
+    "false_blocks": "0/19 (0%)",
+    "expiry_exact": "19/19 (100%)",
     "expiry_invented_when_none": "0/8 (0%)",
-    "fact_recall": "15/15 (100%)",
+    "fact_recall": "19/19 (100%)",
     "facts_dropped_by_verifier": 0,
-    "card_redaction_leaks": "0/15 (0%)",
+    "card_redaction_leaks": "0/19 (0%)",
     "injection_resisted": "n/a",
-    "router_recall_at_3": "n/a",
-    "answer_accuracy": "n/a",
-    "unanswerable_abstained": "n/a",
-    "avg_doc_cost_usd": 0.002012,
-    "avg_question_cost_usd": null,
-    "avg_doc_latency_ms": 3028
+    "router_recall_at_3": "100% over 17 questions",
+    "answer_accuracy": "17/17 (100%)",
+    "unanswerable_abstained": "1/1 (100%)",
+    "hard_router_recall": "n/a",
+    "hard_answer_accuracy": "n/a",
+    "avg_doc_cost_usd": 0.002022,
+    "avg_question_cost_usd": 0.001231,
+    "avg_doc_latency_ms": 3172
   },
   "documents": [
     {
@@ -778,7 +780,548 @@
       "tokens_in": 1341,
       "tokens_out": 43,
       "cost_usd": 0.0005097999999999999
+    },
+    {
+      "id": "gen_passport",
+      "tags": [
+        "photo",
+        "generated",
+        "identity"
+      ],
+      "mime": "image/jpeg",
+      "expected_type": "passport",
+      "expected_blocked": false,
+      "expected_expires_on": "2032-06-09",
+      "latency_ms": 4257,
+      "predicted_type": "passport",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 2783,
+      "tokens_out": 495,
+      "cost_usd": 0.0020724,
+      "expires_on": "2032-06-09",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "X00123456"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Passport - JANE SAMPLE",
+        "holder": "JANE SAMPLE",
+        "issuer": "COUNTRY OF EXAMPLE",
+        "key_facts": [
+          "Passport number present",
+          "Date of birth present",
+          "Date of issue: 10 JUN 2022",
+          "Date of expiration: 09 JUN 2032"
+        ],
+        "topics": [
+          "passport",
+          "travel document",
+          "identification",
+          "country of example"
+        ]
+      }
+    },
+    {
+      "id": "gen_driver_license",
+      "tags": [
+        "photo",
+        "generated",
+        "identity"
+      ],
+      "mime": "image/jpeg",
+      "expected_type": "drivers_license",
+      "expected_blocked": false,
+      "expected_expires_on": "2029-08-22",
+      "latency_ms": 3601,
+      "predicted_type": "drivers_license",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 2785,
+      "tokens_out": 472,
+      "cost_usd": 0.0020155,
+      "expires_on": "2029-08-22",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "EX-994-201-88"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Driver License - MARK SAMPLE",
+        "holder": "MARK SAMPLE",
+        "issuer": "STATE OF EXAMPLE",
+        "key_facts": [
+          "Driver license number present",
+          "Date of birth present",
+          "Home address present",
+          "Class: C",
+          "ISS: 04/15/2024",
+          "EXP: 08/22/2029"
+        ],
+        "topics": [
+          "driver license",
+          "identification",
+          "state of example",
+          "class c"
+        ]
+      }
+    },
+    {
+      "id": "gen_visa",
+      "tags": [
+        "photo",
+        "generated",
+        "identity",
+        "rotated"
+      ],
+      "mime": "image/jpeg",
+      "expected_type": "visa",
+      "expected_blocked": false,
+      "expected_expires_on": "2036-01-14",
+      "latency_ms": 3722,
+      "predicted_type": "visa",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 2783,
+      "tokens_out": 510,
+      "cost_usd": 0.0021099,
+      "expires_on": "2036-01-14",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "2026000419283"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Visa - MARK SAMPLE",
+        "holder": "MARK SAMPLE",
+        "issuer": "COUNTRY OF EXAMPLE",
+        "key_facts": [
+          "Visa type present",
+          "Control number present",
+          "Issue Date: •••2026",
+          "Expiration Date: •••2036",
+          "Entries: M"
+        ],
+        "topics": [
+          "visa",
+          "travel",
+          "b1/b2",
+          "country of example",
+          "expiration",
+          "control number"
+        ]
+      }
+    },
+    {
+      "id": "gen_green_card",
+      "tags": [
+        "photo",
+        "generated",
+        "identity"
+      ],
+      "mime": "image/jpeg",
+      "expected_type": "green_card",
+      "expected_blocked": false,
+      "expected_expires_on": "2031-03-12",
+      "latency_ms": 3701,
+      "predicted_type": "green_card",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 2785,
+      "tokens_out": 491,
+      "cost_usd": 0.002063,
+      "expires_on": "2031-03-12",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "EXM0001234567"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Permanent Resident Card - ELLA SAMPLE",
+        "holder": "ELLA SAMPLE",
+        "issuer": "Exampleland",
+        "key_facts": [
+          "Card expires on 03/12/2031",
+          "Resident since 03/12/2021",
+          "Category: IR1",
+          "Card number present"
+        ],
+        "topics": [
+          "green card",
+          "permanent resident card",
+          "identity card",
+          "residency",
+          "sample document"
+        ]
+      }
     }
   ],
-  "questions": []
+  "questions": [
+    {
+      "question": "How much is the Northfield Energy bill?",
+      "hard": false,
+      "expected": [
+        "gen_power_bill"
+      ],
+      "routed": [
+        "gen_power_bill"
+      ],
+      "found": true,
+      "answer": "The Northfield Energy bill amount due is $142.87 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1379,
+      "cost_usd": 0.0012060999999999999,
+      "tokens_in": 3012,
+      "tokens_out": 121,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "When is the Northfield Energy bill due?",
+      "hard": false,
+      "expected": [
+        "gen_power_bill"
+      ],
+      "routed": [
+        "gen_power_bill"
+      ],
+      "found": true,
+      "answer": "The Northfield Energy utility bill is due on December 12, 2026 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1315,
+      "cost_usd": 0.0012306,
+      "tokens_in": 3027,
+      "tokens_out": 129,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "How much did we pay at Blue Oak Diner?",
+      "hard": false,
+      "expected": [
+        "gen_diner_receipt"
+      ],
+      "routed": [
+        "gen_diner_receipt"
+      ],
+      "found": true,
+      "answer": "You paid 23.55 at Blue Oak Diner [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1492,
+      "cost_usd": 0.0012019,
+      "tokens_in": 3023,
+      "tokens_out": 118,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "When does the Pioneer auto insurance card expire?",
+      "hard": false,
+      "expected": [
+        "gen_auto_card"
+      ],
+      "routed": [
+        "gen_auto_card"
+      ],
+      "found": true,
+      "answer": "The Pioneer auto insurance card expires on 05/31/2027 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1460,
+      "cost_usd": 0.0012223,
+      "tokens_in": 3016,
+      "tokens_out": 127,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "Until when is the dishwasher warranty valid?",
+      "hard": false,
+      "expected": [
+        "gen_warranty"
+      ],
+      "routed": [
+        "gen_warranty"
+      ],
+      "found": true,
+      "answer": "The KitchenPro dishwasher warranty is valid until March 9, 2028 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1230,
+      "cost_usd": 0.0012144,
+      "tokens_in": 3023,
+      "tokens_out": 123,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "What is the minimum payment on the Summit Mastercard?",
+      "hard": false,
+      "expected": [
+        "gen_card_stmt"
+      ],
+      "routed": [
+        "gen_card_stmt"
+      ],
+      "found": true,
+      "answer": "The minimum payment due on the Summit Bank Mastercard is $45.00 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1459,
+      "cost_usd": 0.0012172,
+      "tokens_in": 3024,
+      "tokens_out": 124,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "How much rent does Mark pay?",
+      "hard": false,
+      "expected": [
+        "gen_lease"
+      ],
+      "routed": [
+        "gen_lease"
+      ],
+      "found": true,
+      "answer": "Mark pays a monthly rent of $1,850.00 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1377,
+      "cost_usd": 0.0011960999999999999,
+      "tokens_in": 3012,
+      "tokens_out": 117,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "Скільки треба заплатити за газ і до якого числа?",
+      "hard": false,
+      "expected": [
+        "gen_bill_ua"
+      ],
+      "routed": [
+        "gen_bill_ua"
+      ],
+      "found": true,
+      "answer": "За газ треба сплатити 612,40 грн до 20.12.2026 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1423,
+      "cost_usd": 0.0012971,
+      "tokens_in": 3032,
+      "tokens_out": 155,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "When does Jane's passport expire?",
+      "hard": false,
+      "expected": [
+        "gen_passport"
+      ],
+      "routed": [
+        "gen_passport"
+      ],
+      "found": true,
+      "answer": "Jane's passport expires on 09 JUN 2032 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1426,
+      "cost_usd": 0.0012339,
+      "tokens_in": 3113,
+      "tokens_out": 120,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "When does Mark's driver license expire?",
+      "hard": false,
+      "expected": [
+        "gen_driver_license"
+      ],
+      "routed": [
+        "gen_driver_license"
+      ],
+      "found": true,
+      "answer": "Mark's driver license expires on 08/22/2029 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1324,
+      "cost_usd": 0.001241,
+      "tokens_in": 3070,
+      "tokens_out": 128,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "What type of visa does Mark have?",
+      "hard": false,
+      "expected": [
+        "gen_visa"
+      ],
+      "routed": [
+        "gen_visa"
+      ],
+      "found": true,
+      "answer": "Mark has a B1/B2 visa [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1375,
+      "cost_usd": 0.0011828,
+      "tokens_in": 3026,
+      "tokens_out": 110,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "When does Ella's green card expire?",
+      "hard": false,
+      "expected": [
+        "gen_green_card"
+      ],
+      "routed": [
+        "gen_green_card"
+      ],
+      "found": true,
+      "answer": "Ella's green card expires on 03/12/2031 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1358,
+      "cost_usd": 0.0012419,
+      "tokens_in": 3048,
+      "tokens_out": 131,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "Which car is the Subaru registration for, and until when is it valid?",
+      "hard": false,
+      "expected": [
+        "gen_registration"
+      ],
+      "routed": [
+        "gen_registration"
+      ],
+      "found": true,
+      "answer": "The registration is for a Subaru Outback 2020 (Plate: 8KLM204) [1] and is valid through 04/30/2027 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1653,
+      "cost_usd": 0.0013549,
+      "tokens_in": 3008,
+      "tokens_out": 181,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "How much did Ella earn in wages in 2025?",
+      "hard": false,
+      "expected": [
+        "gen_w2"
+      ],
+      "routed": [
+        "gen_w2"
+      ],
+      "found": true,
+      "answer": "Ella earned 54,300.00 in wages, tips, and other compensation in 2025 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1360,
+      "cost_usd": 0.0012779,
+      "tokens_in": 3043,
+      "tokens_out": 146,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "How many years is Mark's visa valid in total?",
+      "hard": false,
+      "expected": [
+        "gen_visa"
+      ],
+      "routed": [
+        "gen_visa"
+      ],
+      "found": true,
+      "answer": "Mark's visa is valid for 10 years in total, from the issue date of 15JAN2026 to the expiration date of 14JAN2036 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1368,
+      "cost_usd": 0.0013155999999999999,
+      "tokens_in": 3052,
+      "tokens_out": 160,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "Which of Mark's documents expires first, the driver license or the visa?",
+      "hard": false,
+      "expected": [
+        "gen_driver_license",
+        "gen_visa"
+      ],
+      "routed": [
+        "gen_driver_license",
+        "gen_visa"
+      ],
+      "found": true,
+      "answer": "Mark's driver license expires first on 08/22/2029 [1], while his visa expires on 14JAN2036 [2].",
+      "citations": 2,
+      "dropped_citations": 0,
+      "latency_ms": 1481,
+      "cost_usd": 0.0014429999999999998,
+      "tokens_in": 3185,
+      "tokens_out": 195,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "Коли expires green card у Елли?",
+      "hard": false,
+      "expected": [
+        "gen_green_card"
+      ],
+      "routed": [
+        "gen_green_card"
+      ],
+      "found": true,
+      "answer": "Ella's green card expires on 03/12/2031 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1577,
+      "cost_usd": 0.0012334999999999998,
+      "tokens_in": 3045,
+      "tokens_out": 128,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "What is Leo's passport number?",
+      "hard": false,
+      "expected": [],
+      "routed": [],
+      "found": false,
+      "answer": "I could not find this in your documents.",
+      "citations": 0,
+      "dropped_citations": 0,
+      "latency_ms": 607,
+      "cost_usd": 0.0008541,
+      "tokens_in": 2622,
+      "tokens_out": 27,
+      "abstained": true
+    }
+  ]
 }
