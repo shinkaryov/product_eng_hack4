@@ -1,9 +1,4 @@
-"""Document processing worker.
-
-Postgres is the queue: jobs are claimed with FOR UPDATE SKIP LOCKED, and every
-step writes a row to document_events (UPLOADED, OCR_DONE, EXTRACTED, FAILED...).
-The claim/process logic lands together with the schema migration.
-"""
+"""Poll PostgreSQL for private file cleanup and local OCR work."""
 
 import logging
 import signal
@@ -13,6 +8,7 @@ from sqlalchemy import text
 
 from vault.config import get_settings
 from vault.db import engine
+from vault.processing.local import process_next_job
 
 log = logging.getLogger("vault.worker")
 _running = True
@@ -23,14 +19,10 @@ def _stop(*_: object) -> None:
     _running = False
 
 
-def process_next_job() -> bool:
-    """Claim and process one job. Returns True if a job was handled."""
-    # TODO: claim from processing_jobs once the schema migration exists
-    return False
-
-
 def main() -> None:
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s"
+    )
     signal.signal(signal.SIGTERM, _stop)
     signal.signal(signal.SIGINT, _stop)
     settings = get_settings()

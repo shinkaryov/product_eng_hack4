@@ -2,7 +2,7 @@
 
 ## Local startup
 
-Copy the sample environment file and set a URL-safe local `POSTGRES_PASSWORD` in `.env`.
+Copy the sample environment file and set a URL-safe local `POSTGRES_PASSWORD` and a random `JWT_SECRET` of at least 32 bytes in `.env`.
 
 ```sh
 cp .env.example .env
@@ -20,7 +20,9 @@ To start only PostgreSQL and its migration service, run `docker compose up -d --
 
 ## Database schema
 
-The initial Alembic revisions enable pgvector and create the `vault` schema. It contains accounts, family membership and grants, documents and processing jobs, summaries, deadlines and reminders, and document chatbot history. The database migration provides storage and constraints. The worker and API skeletons still need their application behavior.
+The initial Alembic revisions enable pgvector and create the `vault` schema. It contains accounts, family membership and grants, documents and processing jobs, summaries, deadlines and reminders, and document chatbot history. Revision `0003_local_ocr` adds private staging for locally extracted pages. The worker runs English and Czech Tesseract OCR when embedded text is insufficient. After OCR, a document reports `processing_stage=AWAITING_SCREENING` until the AI integration publishes a result. Published summaries and extractions can be read through the API with Gemini offline.
+
+The API contract is available at `http://localhost:8000/docs`. Run the two-user local integration test against a healthy Compose stack with `docker compose exec -T api python - < tests/integration/test_local_vault.py`.
 
 Check the migration and tables with these commands.
 
