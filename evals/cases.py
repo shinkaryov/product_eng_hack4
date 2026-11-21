@@ -151,6 +151,18 @@ DOCS = [
          lines=["NetFiber Internet Service Agreement", "Customer: Jane Sample", "Speed: 500 Mbps",
                 "Monthly fee: $49.00", "This agreement continues month to month.",
                 "Either party may cancel with 30 days notice."]),
+    # --- Hard: same document type for two family members, superseded documents ---
+    dict(id="passport_mark", doc_type="passport", expires_on="2027-01-15", tags=["identity", "hard", "same_type"],
+         facts=["K30917755"], secrets=["K30917755", "1985-05-11"],
+         lines=["PASSPORT / PASSEPORT", "Type: P   Country code: UTO", "Passport No.: K30917755", "Surname: SAMPLE",
+                "Given names: MARK", "Date of birth: 1985-05-11", "Date of issue: 2017-01-16",
+                "Date of expiry: 2027-01-15"]),
+    dict(id="lease_en_old", doc_type="lease", expires_on="2026-01-31", tags=["contract", "hard", "superseded"],
+         facts=["1,750.00"], secrets=[],
+         lines=["RESIDENTIAL LEASE AGREEMENT", "Landlord: Oak Street Properties LLC", "Tenant: Jane Sample",
+                "Premises: Apartment 4B", "Lease term: February 1, 2025 through January 31, 2026",
+                "Monthly rent: $1,750.00 due on the 1st of each month", "Security deposit: $1,750.00",
+                "This lease expires on January 31, 2026."]),
 ]
 
 QUESTIONS = [
@@ -188,4 +200,27 @@ QUESTIONS = [
     ("What is my dentist's phone number?", [], None),
     ("How much is my gym membership?", [], None),
     ("What is the interest rate on my mortgage?", [], None),
+]
+
+# Hard questions, reported separately (`hard_*` metrics) so the core numbers stay comparable across runs.
+# Expected answer: a string (must appear), a list (all must appear) or a tuple (any one must appear).
+HARD_QUESTIONS = [
+    # Two family members with the same document type: whose is it?
+    ("When does Mark's passport expire?", ["passport_mark"], "2027"),
+    ("Whose passport expires first?", ["passport", "passport_mark"], "Mark"),
+    ("When does the passport expire?", ["passport", "passport_mark"], ["2027", "2031"]),
+    # Date arithmetic: the documents state the inputs, the model has to compute the answer.
+    ("If I move out at the end of the current lease for apartment 4B, by what date do I have to give notice?",
+     ["lease_en"], ("December 2", "2026-12-02", "12/02/2026", "Dec 2")),
+    ("How much do we pay for StreamBox per year?", ["streaming"], "191.88"),
+    ("Is Ella's travel insurance still valid on December 31, 2026?", ["travel_ins"], ("December 30", "30 December", "2026-12-30")),
+    ("How many years will Jane's passport be valid in total?", ["passport"], ("10", "ten")),
+    # Ambiguous: several documents match, a good answer covers all of them (or asks which one).
+    ("How much is the deductible?", ["auto_ins", "home_ins"], ["500", "1,000"]),
+    ("How much rent do I pay now?", ["lease_en", "lease_cz"], ["1,850", "18 500"]),
+    ("What was my rent in 2025?", ["lease_en_old"], "1,750"),
+    # Mixed languages in one question.
+    ("Коли expires паспорт Марка?", ["passport_mark"], "2027"),
+    ("Скільки deductible на home insurance?", ["home_ins"], "1,000"),
+    ("Do kdy platí travel insurance для Елли?", ["travel_ins"], "30"),
 ]

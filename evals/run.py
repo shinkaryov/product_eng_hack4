@@ -2,7 +2,8 @@
 
     uv run python -m evals.run            # analyze all documents, then chat questions
     uv run python -m evals.run --reuse    # reuse cached document analysis, rerun chat only
-    uv run python -m evals.run --set realistic   # photos (CORD receipts + generated), documents only
+    uv run python -m evals.run --set realistic   # photos (CORD receipts + generated) + photo chat questions
+    uv run python -m evals.run --reuse --new     # only new docs + hard questions (results/hard.*)
 
 Writes evals/results/latest.json and evals/results/latest.md. Rendered files and the
 analysis cache live in evals/.cache (git-ignored). PNG "scans" are made with macOS `sips`.
@@ -18,7 +19,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from evals import realistic
-from evals.cases import DOCS, QUESTIONS
+from evals.cases import DOCS, HARD_QUESTIONS, QUESTIONS
 from vault.ai import prompts
 from vault.ai.analyze import analyze_document
 from vault.ai.chat import DocCard, answer_question
@@ -162,7 +163,7 @@ def evaluate_doc(llm, case: dict) -> dict:
 # --- Chat ---------------------------------------------------------------------
 
 
-def evaluate_questions(llm, doc_rows: list[dict], questions=QUESTIONS) -> list[dict]:
+def evaluate_questions(llm, doc_rows: list[dict], questions=QUESTIONS, hard: bool = False) -> list[dict]:
     published = [r for r in doc_rows if r.get("card")]
     cards = [DocCard(r["id"], r["predicted_type"], r.get("expires_on"), _card(r["card"])) for r in published]
     texts = {r["id"]: r["full_text"] for r in published}
@@ -171,21 +172,31 @@ def evaluate_questions(llm, doc_rows: list[dict], questions=QUESTIONS) -> list[d
         try:
             res = answer_question(llm, question, cards, lambda ids: {i: texts[i] for i in ids})
         except LLMError as exc:
-            rows.append({"question": question, "expected": expected, "error": f"{type(exc).__name__}: {exc}"})
+            rows.append({"question": question, "expected": expected, "hard": hard, "error": f"{type(exc).__name__}: {exc}"})
             continue
         routed = res.routed_document_ids
-        row = {"question": question, "expected": expected, "routed": routed, "found": res.found, "answer": res.answer,
+        row = {"question": question, "hard": hard, "expected": expected, "routed": routed, "found": res.found, "answer": res.answer,
                "citations": len(res.citations), "dropped_citations": res.dropped_citations,
                "latency_ms": sum(u.latency_ms for u in res.usage.calls), "cost_usd": cost(res.usage),
                "tokens_in": res.usage.input_tokens, "tokens_out": res.usage.output_tokens}
         if expected:
             row["router_recall"] = len(set(expected) & set(routed)) / len(expected)
             if needle is not None:
-                row["answer_ok"] = res.found and _digits(needle) in _digits(res.answer)
+                row["answer_ok"] = res.found and _answer_matches(needle, res.answer)
         else:
             row["abstained"] = not res.found  # unanswerable: must not claim an answer
         rows.append(row)
     return rows
+
+
+def _answer_matches(needle: str | list[str] | tuple[str, ...], answer: str) -> bool:
+    """str: must appear; list: all must appear; tuple: any one must appear (alternative spellings)."""
+    hit = lambda n: _digits(n) in _digits(answer)  # noqa: E731
+    if isinstance(needle, tuple):
+        return any(hit(n) for n in needle)
+    if isinstance(needle, list):
+        return all(hit(n) for n in needle)
+    return hit(needle)
 
 
 def _card(data: dict):
@@ -201,7 +212,11 @@ def _pct(num: int, den: int) -> str:
     return f"{num}/{den} ({num / den:.0%})" if den else "n/a"
 
 
-def summarize(docs: list[dict], qs: list[dict]) -> dict:
+def summarize(docs: list[dict], all_qs: list[dict]) -> dict:
+    qs = [q for q in all_qs if not q.get("hard")]
+    hard = [q for q in all_qs if q.get("hard")]
+    hard_routed = [q for q in hard if "router_recall" in q]
+    hard_answered = [q for q in hard if "answer_ok" in q]
     ok = [d for d in docs if "error" not in d]
     allowed = [d for d in ok if not d["expected_blocked"]]
     extracted = [d for d in allowed if "facts_found" in d]
@@ -210,10 +225,10 @@ def summarize(docs: list[dict], qs: list[dict]) -> dict:
     answered = [q for q in qs if "answer_ok" in q]
     unans = [q for q in qs if "abstained" in q]
     doc_cost = [d["cost_usd"] for d in ok if "cost_usd" in d]
-    q_cost = [q["cost_usd"] for q in qs if "cost_usd" in q]
+    q_cost = [q["cost_usd"] for q in all_qs if "cost_usd" in q]
     return {
         "documents": len(docs),
-        "errors": len(docs) - len(ok) + sum(1 for q in qs if "error" in q),
+        "errors": len(docs) - len(ok) + sum(1 for q in all_qs if "error" in q),
         "classification_accuracy": _pct(sum(d["predicted_type"] == d["expected_type"] for d in ok), len(ok)),
         "blacklist_recall": _pct(sum(d["blocked"] for d in ok if d["expected_blocked"]), sum(d["expected_blocked"] for d in ok)),
         "false_blocks": _pct(sum(d["blocked"] for d in allowed), len(allowed)),
@@ -228,6 +243,8 @@ def summarize(docs: list[dict], qs: list[dict]) -> dict:
         "router_recall_at_3": f"{sum(q['router_recall'] for q in routed) / len(routed):.0%} over {len(routed)} questions" if routed else "n/a",
         "answer_accuracy": _pct(sum(q["answer_ok"] for q in answered), len(answered)),
         "unanswerable_abstained": _pct(sum(q["abstained"] for q in unans), len(unans)),
+        "hard_router_recall": f"{sum(q['router_recall'] for q in hard_routed) / len(hard_routed):.0%} over {len(hard_routed)} questions" if hard_routed else "n/a",
+        "hard_answer_accuracy": _pct(sum(q["answer_ok"] for q in hard_answered), len(hard_answered)),
         "avg_doc_cost_usd": round(sum(doc_cost) / len(doc_cost), 6) if doc_cost else None,
         "avg_question_cost_usd": round(sum(q_cost) / len(q_cost), 6) if q_cost else None,
         "avg_doc_latency_ms": int(sum(d["latency_ms"] for d in ok) / len(ok)) if ok else None,
@@ -252,14 +269,15 @@ def failures(docs: list[dict], qs: list[dict]) -> list[str]:
             if d["card_leaks"]:
                 out.append(f"doc `{d['id']}`: card leaks {d['card_leaks']}")
     for q in qs:
+        tag = "[hard] " if q.get("hard") else ""
         if "error" in q:
-            out.append(f"question \"{q['question']}\": error {q['error']}")
+            out.append(f"{tag}question \"{q['question']}\": error {q['error']}")
         elif q.get("router_recall", 1) < 1:
-            out.append(f"question \"{q['question']}\": routed {q['routed']} (expected {q['expected']})")
-        elif q.get("answer_ok") is False:
-            out.append(f"question \"{q['question']}\": answer \"{q['answer']}\"")
+            out.append(f"{tag}question \"{q['question']}\": routed {q['routed']} (expected {q['expected']})")
+        if q.get("answer_ok") is False:
+            out.append(f"{tag}question \"{q['question']}\": answer \"{q['answer']}\"")
         elif q.get("abstained") is False:
-            out.append(f"question \"{q['question']}\": should be not found, answered \"{q['answer']}\"")
+            out.append(f"{tag}question \"{q['question']}\": should be not found, answered \"{q['answer']}\"")
     return out
 
 
@@ -278,7 +296,8 @@ def write_report(summary: dict, docs: list[dict], qs: list[dict], model: str, na
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--reuse", action="store_true", help="reuse cached document analysis")
+    parser.add_argument("--reuse", action="store_true", help="reuse cached analysis; analyze only documents missing from it")
+    parser.add_argument("--new", action="store_true", help="synthetic: run only HARD_QUESTIONS, report to results/hard.*")
     parser.add_argument("--only", help="comma-separated document case ids")
     parser.add_argument("--set", choices=["synthetic", "realistic"], default="synthetic")
     parser.add_argument("--rpm", type=float, default=12, help="max model calls per minute")
@@ -287,29 +306,33 @@ def main() -> None:
     settings = get_settings()
     model = f"{settings.gemini_model} (main), {settings.gemini_router_model} (router)" if llm.provider == "gemini" else llm.provider
     real = args.set == "realistic"
-    all_cases, questions = (realistic.docs(), []) if real else (DOCS, QUESTIONS)
+    all_cases, questions = (realistic.docs(), realistic.QUESTIONS) if real else (DOCS, QUESTIONS)
     cache_file = CACHE / ("analysis-realistic.json" if real else "analysis.json")
 
     cases = [c for c in all_cases if not args.only or c["id"] in args.only.split(",")]
     if args.only:
         cache_file = CACHE / "analysis-partial.json"
-    if args.reuse and cache_file.exists():
-        docs = json.loads(cache_file.read_text())
-    else:
-        docs = []
-        for case in cases:
-            row = evaluate_doc(llm, case)
-            print(f"{case['id']:<18} {row.get('predicted_type', row.get('error'))}", file=sys.stderr)
-            docs.append(row)
-        CACHE.mkdir(exist_ok=True)
-        cache_file.write_text(json.dumps(docs, ensure_ascii=False))
-    qs = evaluate_questions(llm, docs, questions)
-    summary = summarize(docs, qs)
+    cached = {d["id"]: d for d in json.loads(cache_file.read_text())} if args.reuse and cache_file.exists() else {}
+    docs = []
+    for case in cases:
+        if case["id"] in cached and "error" not in cached[case["id"]]:
+            docs.append(cached[case["id"]])
+            continue
+        row = evaluate_doc(llm, case)
+        print(f"{case['id']:<18} {row.get('predicted_type', row.get('error'))}", file=sys.stderr)
+        docs.append(row)
+    CACHE.mkdir(exist_ok=True)
+    cache_file.write_text(json.dumps(docs, ensure_ascii=False))
     if real:
-        write_report(summary, docs, qs, model, "realistic", "realistic (photo)")
+        qs = evaluate_questions(llm, docs, questions)
+        write_report(summarize(docs, qs), docs, qs, model, "realistic", "realistic (photo)")
+    elif args.new:
+        qs = evaluate_questions(llm, docs, HARD_QUESTIONS, hard=True)
+        write_report(summarize(docs, qs), docs, qs, model, "hard", "synthetic")
     else:
-        write_report(summary, docs, qs, model)
-    print(json.dumps(summary, indent=2))
+        qs = evaluate_questions(llm, docs, questions) + evaluate_questions(llm, docs, HARD_QUESTIONS, hard=True)
+        write_report(summarize(docs, qs), docs, qs, model)
+    print(json.dumps(summarize(docs, qs), indent=2))
 
 
 if __name__ == "__main__":
