@@ -6,6 +6,7 @@ turn_version is unchanged (no concurrent turn) and the documents are still reada
 
 import json
 import logging
+from dataclasses import asdict
 from typing import Annotated
 from uuid import UUID
 
@@ -15,7 +16,13 @@ from pydantic import BaseModel, Field, ValidationError
 from vault.ai.chat import DocCard, Turn, answer_question
 from vault.ai.schemas import SummaryCard
 from vault.documents import ACCESS, document
-from vault.llm import LLMClient, LLMInvalidOutput, LLMUnavailable, get_llm_client
+from vault.llm import (
+    LLMClient,
+    LLMInvalidOutput,
+    LLMUnavailable,
+    UsageLog,
+    get_llm_client,
+)
 from vault.local_auth import DB, User, query, required
 from vault.saved import Chat
 
@@ -129,6 +136,7 @@ def send_message(id: UUID, body: Message, db: DB, user: User, llm: LLM):
             history=[Turn(t["question"], t["answer"]) for t in history],
             # Follow-ups usually refer to what the last answer was based on.
             previous_document_ids=[str(i) for i in history[-1]["routed_document_ids"]] if history else [],
+            document_bound=session["document_id"] is not None,
         )
     except LLMUnavailable:
         raise HTTPException(503, "AI provider unavailable, try again shortly")
@@ -157,8 +165,10 @@ def send_message(id: UUID, body: Message, db: DB, user: User, llm: LLM):
     turn = query(
         db,
         """INSERT INTO vault.chat_turns
-               (session_id, turn_number, question, answer_status, answer, citations, source_revision, routed_document_ids)
-           VALUES (:sid, :n, :q, :status, :answer, CAST(:citations AS jsonb), :rev, CAST(:routed AS uuid[]))
+               (session_id, turn_number, question, answer_status, answer, citations, source_revision, routed_document_ids,
+                prompt_version, usage)
+           VALUES (:sid, :n, :q, :status, :answer, CAST(:citations AS jsonb), :rev, CAST(:routed AS uuid[]),
+                   :prompt_version, CAST(:usage AS jsonb))
            RETURNING *""",
         sid=id,
         n=turn_number,
@@ -168,10 +178,17 @@ def send_message(id: UUID, body: Message, db: DB, user: User, llm: LLM):
         citations=json.dumps([c.model_dump() for c in result.citations]),
         rev=still_readable.get(str(session["document_id"])) if session["document_id"] else None,
         routed=result.routed_document_ids,
+        prompt_version=result.prompt_version,
+        usage=json.dumps(_usage(result.usage)),
     ).one()
     db.commit()
-    return dict(
-        turn,
-        standalone_question=result.standalone_question,
-        usage={"input_tokens": result.usage.input_tokens, "output_tokens": result.usage.output_tokens},
-    )
+    return dict(turn, standalone_question=result.standalone_question)
+
+
+def _usage(usage: UsageLog) -> dict:
+    """Per-turn model usage, stored for cost per user (unit economics) and latency tracking."""
+    return {
+        "input_tokens": usage.input_tokens,
+        "output_tokens": usage.output_tokens,
+        "calls": [asdict(c) for c in usage.calls],
+    }

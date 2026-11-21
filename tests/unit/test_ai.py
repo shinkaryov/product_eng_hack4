@@ -1,7 +1,14 @@
 from datetime import date
 
 from vault.ai.analyze import analyze_document
-from vault.ai.chat import NOT_FOUND, DocCard, Turn, answer_question
+from vault.ai.chat import (
+    MAX_ROUTER_CARDS,
+    NOT_FOUND,
+    NOT_FOUND_UK,
+    DocCard,
+    Turn,
+    answer_question,
+)
 from vault.ai.schemas import (
     ChatAnswer,
     Citation,
@@ -265,3 +272,56 @@ def test_parse_amount():
     assert parse_amount("1,250.00") == Decimal("1250.00")
     assert parse_amount("$500") == Decimal("500")
     assert parse_amount("n/a") is None
+
+
+def test_chat_prompts_get_today_and_router_prompt_ends_with_question():
+    llm = FakeLLMClient(
+        responses={
+            RouteDecision: RouteDecision(document_ids=["doc-1"]),
+            ChatAnswer: ChatAnswer(found=True, answer="Valid until 12 AUG 2031 [1]",
+                                   citations=[Citation(document_id="doc-1", quote="12 AUG 2031")]),
+        }
+    )
+    answer_question(llm, "Is my passport still valid?", _cards(), load_texts=lambda ids: {i: PASSPORT_TEXT for i in ids},
+                    today=date(2026, 11, 21))
+    router, answer = llm.calls
+    assert router.system.endswith("Today's date: 2026-11-21.")
+    assert answer.system.endswith("Today's date: 2026-11-21.")
+    assert router.prompt.startswith("Document cards (JSON):")
+    assert router.prompt.endswith("Current question: Is my passport still valid?")
+
+
+def test_chat_not_found_is_in_the_language_of_the_question():
+    llm = FakeLLMClient(responses={RouteDecision: RouteDecision(document_ids=[])})
+    assert answer_question(llm, "Який у мене номер полісу?", _cards(), load_texts=lambda ids: {}).answer == NOT_FOUND_UK
+    assert answer_question(llm, "What is my policy number?", _cards(), load_texts=lambda ids: {}).answer == NOT_FOUND
+
+
+def test_document_bound_chat_skips_router():
+    llm = FakeLLMClient(
+        responses={ChatAnswer: ChatAnswer(found=True, answer="12 AUG 2031 [1]",
+                                          citations=[Citation(document_id="doc-1", quote="12 AUG 2031")])}
+    )
+    result = answer_question(llm, "When?", _cards(), load_texts=lambda ids: {i: PASSPORT_TEXT for i in ids},
+                             document_bound=True)
+    assert [c.role for c in llm.calls] == [ModelRole.MAIN]
+    assert result.found and result.routed_document_ids == ["doc-1"]
+
+
+def test_history_answers_are_sent_without_citation_markers():
+    llm = FakeLLMClient(responses={RouteDecision: RouteDecision(document_ids=[])})
+    answer_question(llm, "And the holder?", _cards(), load_texts=lambda ids: {},
+                    history=[Turn("When does it expire?", "It expires 12 AUG 2031 [1][2].")])
+    assert "Assistant: It expires 12 AUG 2031." in llm.calls[0].prompt
+
+
+def test_large_vault_is_prefiltered_before_routing():
+    filler = SummaryCard(title="Electric bill", holder=None, issuer="Power Co", key_facts=["total due 80.00"],
+                         topics=["electricity"])
+    cards = [DocCard(f"bill-{i}", "utility_bill", None, filler) for i in range(MAX_ROUTER_CARDS + 10)]
+    cards.insert(0, _cards()[0])  # the oldest card: only kept because it matches the question
+    llm = FakeLLMClient(responses={RouteDecision: RouteDecision(document_ids=[])})
+    answer_question(llm, "When does my passport expire?", cards, load_texts=lambda ids: {})
+    prompt = llm.calls[0].prompt
+    assert prompt.count('"id": ') == MAX_ROUTER_CARDS
+    assert '"id": "doc-1"' in prompt

@@ -289,7 +289,7 @@ def test_chat_turns_respect_current_share_access(api, household, monkeypatch):
     _use_llm(monkeypatch, llm)
     result = viewer.post(path + "/messages", json=question)
     assert result.status_code == 201, result.text
-    turn = {k: v for k, v in result.json().items() if k not in ("standalone_question", "usage")}  # response-only
+    turn = {k: v for k, v in result.json().items() if k != "standalone_question"}  # response-only
     assert (turn["turn_number"], turn["answer_status"], turn["source_revision"]) == (1, "ANSWERED", 1)
     assert [(c["n"], c["document_id"], c["quote"]) for c in turn["citations"]] == [
         (1, doc_id, "Collision deductible: $500.00")

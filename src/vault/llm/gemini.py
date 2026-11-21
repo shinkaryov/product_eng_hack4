@@ -18,6 +18,7 @@ from vault.llm.base import (
 log = logging.getLogger("vault.llm.gemini")
 
 _RETRYABLE_STATUS = {429, 500, 502, 503, 504}
+_INVALID_OUTPUT_RETRIES = 1  # malformed or empty JSON is usually a one-off; ask once more before failing
 
 
 class GeminiClient:
@@ -53,6 +54,17 @@ class GeminiClient:
             response_json_schema=schema.model_json_schema(),
         )
 
+        attempt = 0
+        while True:
+            try:
+                return self._generate_once(model, contents, config, schema)
+            except LLMInvalidOutput as exc:
+                if attempt >= _INVALID_OUTPUT_RETRIES:
+                    raise
+                log.warning("%s, retrying once", exc)
+                attempt += 1
+
+    def _generate_once(self, model: str, contents: list, config: types.GenerateContentConfig, schema: type[T]) -> LLMResult[T]:
         started = time.monotonic()
         response = self._call_with_retry(model, contents, config)
         latency_ms = int((time.monotonic() - started) * 1000)
