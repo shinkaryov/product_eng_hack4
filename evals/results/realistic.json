@@ -1,0 +1,1327 @@
+{
+  "run_at": "2026-11-21T15:29:32+00:00",
+  "model": "gemini-3.5-flash-lite (main), gemini-3.5-flash-lite (router)",
+  "prompt_version": "2026-11-21.7",
+  "summary": {
+    "documents": 22,
+    "errors": 0,
+    "classification_accuracy": "22/22 (100%)",
+    "blacklist_recall": "3/3 (100%)",
+    "false_blocks": "0/19 (0%)",
+    "expiry_exact": "19/19 (100%)",
+    "expiry_invented_when_none": "0/8 (0%)",
+    "fact_recall": "19/19 (100%)",
+    "facts_dropped_by_verifier": 0,
+    "card_redaction_leaks": "0/19 (0%)",
+    "injection_resisted": "n/a",
+    "router_recall_at_3": "100% over 17 questions",
+    "answer_accuracy": "17/17 (100%)",
+    "unanswerable_abstained": "1/1 (100%)",
+    "hard_router_recall": "n/a",
+    "hard_answer_accuracy": "n/a",
+    "avg_doc_cost_usd": 0.002022,
+    "avg_question_cost_usd": 0.001231,
+    "avg_doc_latency_ms": 3172
+  },
+  "documents": [
+    {
+      "id": "cord_0",
+      "tags": [
+        "photo",
+        "real",
+        "receipt",
+        "no_expiry"
+      ],
+      "mime": "image/jpeg",
+      "expected_type": "receipt",
+      "expected_blocked": false,
+      "expected_expires_on": null,
+      "latency_ms": 2946,
+      "predicted_type": "receipt",
+      "confidence": 0.95,
+      "blocked": false,
+      "tokens_in": 2815,
+      "tokens_out": 770,
+      "cost_usd": 0.0027695,
+      "expires_on": null,
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "60.000"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "CGV Cinemas Receipt",
+        "holder": null,
+        "issuer": "CGV Cinemas",
+        "key_facts": [
+          "Ticket quantity: 2.00",
+          "Total amount: 60.000",
+          "Tax: 5.455",
+          "Payment method: EDC CIMB NIAGA with account number present"
+        ],
+        "topics": [
+          "receipt",
+          "cinema",
+          "tickets",
+          "tax",
+          "payment",
+          "edc"
+        ]
+      }
+    },
+    {
+      "id": "cord_1",
+      "tags": [
+        "photo",
+        "real",
+        "receipt",
+        "no_expiry"
+      ],
+      "mime": "image/jpeg",
+      "expected_type": "receipt",
+      "expected_blocked": false,
+      "expected_expires_on": null,
+      "latency_ms": 2225,
+      "predicted_type": "receipt",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 2783,
+      "tokens_out": 360,
+      "cost_usd": 0.0017349000000000002,
+      "expires_on": null,
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "91000"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Receipt",
+        "holder": null,
+        "issuer": null,
+        "key_facts": [
+          "Total amount paid is 91000",
+          "Paid with cash"
+        ],
+        "topics": [
+          "receipt",
+          "cash",
+          "total"
+        ]
+      }
+    },
+    {
+      "id": "cord_2",
+      "tags": [
+        "photo",
+        "real",
+        "receipt",
+        "no_expiry"
+      ],
+      "mime": "image/jpeg",
+      "expected_type": "receipt",
+      "expected_blocked": false,
+      "expected_expires_on": null,
+      "latency_ms": 3001,
+      "predicted_type": "receipt",
+      "confidence": 0.99,
+      "blocked": false,
+      "tokens_in": 2815,
+      "tokens_out": 621,
+      "cost_usd": 0.002397,
+      "expires_on": null,
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "28,000"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Receipt",
+        "holder": null,
+        "issuer": null,
+        "key_facts": [
+          "Total sales amount: 28,000",
+          "Cash paid: 100.000",
+          "Change returned: 72,000",
+          "Queue number present"
+        ],
+        "topics": [
+          "receipt",
+          "purchase",
+          "sales",
+          "cash",
+          "items"
+        ]
+      }
+    },
+    {
+      "id": "cord_3",
+      "tags": [
+        "photo",
+        "real",
+        "receipt",
+        "no_expiry"
+      ],
+      "mime": "image/jpeg",
+      "expected_type": "receipt",
+      "expected_blocked": false,
+      "expected_expires_on": null,
+      "latency_ms": 2824,
+      "predicted_type": "receipt",
+      "confidence": 0.99,
+      "blocked": false,
+      "tokens_in": 2815,
+      "tokens_out": 629,
+      "cost_usd": 0.002417,
+      "expires_on": null,
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "11,000"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Receipt - Dynamic Natural Bakery & Cake",
+        "holder": null,
+        "issuer": "Dynamic Natural Bakery & Cake",
+        "key_facts": [
+          "Purchased 1X DONAT GULA for 11,000",
+          "Subtotal is 11,000",
+          "Total is 11,000",
+          "Paid with cash 11,000"
+        ],
+        "topics": [
+          "receipt",
+          "bakery",
+          "donat gula",
+          "purchase",
+          "cash",
+          "total"
+        ]
+      }
+    },
+    {
+      "id": "cord_4",
+      "tags": [
+        "photo",
+        "real",
+        "receipt",
+        "no_expiry"
+      ],
+      "mime": "image/jpeg",
+      "expected_type": "receipt",
+      "expected_blocked": false,
+      "expected_expires_on": null,
+      "latency_ms": 3512,
+      "predicted_type": "receipt",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 2815,
+      "tokens_out": 860,
+      "cost_usd": 0.0029944999999999998,
+      "expires_on": null,
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "174,600"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Receipt - Food and Beverages",
+        "holder": null,
+        "issuer": null,
+        "key_facts": [
+          "Subtotal: 194,000",
+          "Discount: 19,400",
+          "Total: 174,600",
+          "Cash paid: 200,000",
+          "Change: 25,400"
+        ],
+        "topics": [
+          "receipt",
+          "coffee",
+          "food",
+          "subtotal",
+          "discount",
+          "total",
+          "cash",
+          "change"
+        ]
+      }
+    },
+    {
+      "id": "cord_6",
+      "tags": [
+        "photo",
+        "real",
+        "receipt",
+        "no_expiry"
+      ],
+      "mime": "image/jpeg",
+      "expected_type": "receipt",
+      "expected_blocked": false,
+      "expected_expires_on": null,
+      "latency_ms": 3332,
+      "predicted_type": "receipt",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 2815,
+      "tokens_out": 710,
+      "cost_usd": 0.0026195,
+      "expires_on": null,
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "46,000"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Receipt - Tous Les Jours",
+        "holder": null,
+        "issuer": "Tous Les Jours",
+        "key_facts": [
+          "Total amount: 46,000",
+          "Cash paid: 50,000",
+          "Change: 4,000",
+          "Purchased items include egg tart, choco custard pastry, and redbean bread"
+        ],
+        "topics": [
+          "receipt",
+          "bakery",
+          "food",
+          "purchase",
+          "cash",
+          "total"
+        ]
+      }
+    },
+    {
+      "id": "gen_power_bill",
+      "tags": [
+        "photo",
+        "generated",
+        "payment_due"
+      ],
+      "mime": "image/jpeg",
+      "expected_type": "utility_bill",
+      "expected_blocked": false,
+      "expected_expires_on": "2026-12-12",
+      "latency_ms": 3815,
+      "predicted_type": "utility_bill",
+      "confidence": 0.99,
+      "blocked": false,
+      "tokens_in": 2785,
+      "tokens_out": 552,
+      "cost_usd": 0.0022155,
+      "expires_on": "2026-12-12",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "142.87"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Utility Bill - Northfield Energy",
+        "holder": null,
+        "issuer": "Northfield Energy",
+        "key_facts": [
+          "Account number present",
+          "Service period: Oct 5 - Nov 4, 2026",
+          "Amount due: $142.87",
+          "Due date: December 12, 2026"
+        ],
+        "topics": [
+          "utility",
+          "energy",
+          "bill",
+          "electricity",
+          "power",
+          "payment",
+          "due"
+        ]
+      }
+    },
+    {
+      "id": "gen_diner_receipt",
+      "tags": [
+        "photo",
+        "generated",
+        "receipt",
+        "no_expiry"
+      ],
+      "mime": "image/jpeg",
+      "expected_type": "receipt",
+      "expected_blocked": false,
+      "expected_expires_on": null,
+      "latency_ms": 3782,
+      "predicted_type": "receipt",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 2783,
+      "tokens_out": 670,
+      "cost_usd": 0.0025099,
+      "expires_on": null,
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "23.55"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Receipt - Blue Oak Diner",
+        "holder": null,
+        "issuer": "Blue Oak Diner",
+        "key_facts": [
+          "Date: 10/14/2026",
+          "TOTAL 23.55"
+        ],
+        "topics": [
+          "receipt",
+          "restaurant",
+          "diner",
+          "food",
+          "burger",
+          "fries",
+          "total"
+        ]
+      }
+    },
+    {
+      "id": "gen_auto_card",
+      "tags": [
+        "photo",
+        "generated",
+        "insurance"
+      ],
+      "mime": "image/jpeg",
+      "expected_type": "auto_insurance",
+      "expected_blocked": false,
+      "expected_expires_on": "2027-05-31",
+      "latency_ms": 4047,
+      "predicted_type": "auto_insurance",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 2785,
+      "tokens_out": 537,
+      "cost_usd": 0.0021780000000000002,
+      "expires_on": "2027-05-31",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "PX-339021"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Auto Insurance Identification Card - Jane Sample",
+        "holder": "Jane Sample",
+        "issuer": "Pioneer Auto Insurance",
+        "key_facts": [
+          "Policy number present",
+          "Insured: Jane Sample",
+          "Effective: 12/01/2026",
+          "Expires: 05/31/2027",
+          "Vehicle: 2021 Toyota RAV4"
+        ],
+        "topics": [
+          "auto insurance",
+          "identification card",
+          "policy number",
+          "vehicle",
+          "effective date",
+          "expires"
+        ]
+      }
+    },
+    {
+      "id": "gen_lease",
+      "tags": [
+        "photo",
+        "generated",
+        "contract"
+      ],
+      "mime": "image/jpeg",
+      "expected_type": "lease",
+      "expected_blocked": false,
+      "expected_expires_on": "2027-07-31",
+      "latency_ms": 3462,
+      "predicted_type": "lease",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 2783,
+      "tokens_out": 574,
+      "cost_usd": 0.0022699,
+      "expires_on": "2027-07-31",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "1,850.00"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Residential Lease Agreement - Mark Sample",
+        "holder": "Mark Sample",
+        "issuer": "Oakridge Properties LLC",
+        "key_facts": [
+          "Lease term: August 1, 2026 through July 31, 2027",
+          "Monthly rent: $1,850.00",
+          "Security deposit: $1,850.00"
+        ],
+        "topics": [
+          "lease",
+          "agreement",
+          "rental",
+          "rent",
+          "deposit",
+          "landlord",
+          "tenant"
+        ]
+      }
+    },
+    {
+      "id": "gen_warranty",
+      "tags": [
+        "photo",
+        "generated",
+        "handwriting"
+      ],
+      "mime": "image/jpeg",
+      "expected_type": "warranty",
+      "expected_blocked": false,
+      "expected_expires_on": "2028-03-09",
+      "latency_ms": 3486,
+      "predicted_type": "warranty",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 2783,
+      "tokens_out": 552,
+      "cost_usd": 0.0022148999999999997,
+      "expires_on": "2028-03-09",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "WX-88120"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "KitchenPro Limited Warranty",
+        "holder": null,
+        "issuer": "KitchenPro",
+        "key_facts": [
+          "Coverage: 2 years from purchase",
+          "Purchase date: 03/10/2026",
+          "Warranty valid until: March 9, 2028",
+          "Model and serial numbers present"
+        ],
+        "topics": [
+          "warranty",
+          "kitchenpro",
+          "limited warranty",
+          "appliance warranty",
+          "coverage",
+          "purchase date",
+          "expiration"
+        ]
+      }
+    },
+    {
+      "id": "gen_card_stmt",
+      "tags": [
+        "photo",
+        "generated",
+        "finance",
+        "payment_due"
+      ],
+      "mime": "image/jpeg",
+      "expected_type": "bank_statement",
+      "expected_blocked": false,
+      "expected_expires_on": "2026-12-18",
+      "latency_ms": 3509,
+      "predicted_type": "bank_statement",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 2785,
+      "tokens_out": 536,
+      "cost_usd": 0.0021755,
+      "expires_on": "2026-12-18",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "2,104.33"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Summit Bank Mastercard Statement",
+        "holder": null,
+        "issuer": "Summit Bank",
+        "key_facts": [
+          "Account number present",
+          "New balance: $2,104.33",
+          "Minimum payment due: $45.00",
+          "Payment due date: 12/18/2026"
+        ],
+        "topics": [
+          "bank",
+          "statement",
+          "mastercard",
+          "credit card",
+          "balance",
+          "payment",
+          "due date"
+        ]
+      }
+    },
+    {
+      "id": "gen_w2",
+      "tags": [
+        "photo",
+        "generated",
+        "finance",
+        "tax",
+        "no_expiry"
+      ],
+      "mime": "image/jpeg",
+      "expected_type": "tax_document",
+      "expected_blocked": false,
+      "expected_expires_on": null,
+      "latency_ms": 3611,
+      "predicted_type": "tax_document",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 2785,
+      "tokens_out": 557,
+      "cost_usd": 0.002228,
+      "expires_on": null,
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "54,300.00"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "2025 Wage and Tax Statement (W-2) - Ella Sample",
+        "holder": "Ella Sample",
+        "issuer": "Riverbend Clinic",
+        "key_facts": [
+          "Tax year 2025",
+          "SSN present",
+          "Wages, tips, other compensation: 54,300.00",
+          "Federal income tax withheld: 6,110.00"
+        ],
+        "topics": [
+          "w-2",
+          "wage and tax statement",
+          "tax",
+          "2025",
+          "income",
+          "withheld",
+          "wages"
+        ]
+      }
+    },
+    {
+      "id": "gen_registration",
+      "tags": [
+        "photo",
+        "generated",
+        "vehicle"
+      ],
+      "mime": "image/jpeg",
+      "expected_type": "vehicle_registration",
+      "expected_blocked": false,
+      "expected_expires_on": "2027-04-30",
+      "latency_ms": 3033,
+      "predicted_type": "vehicle_registration",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 2785,
+      "tokens_out": 378,
+      "cost_usd": 0.0017805,
+      "expires_on": "2027-04-30",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "8KLM204"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Vehicle Registration - Mark Sample",
+        "holder": "Mark Sample",
+        "issuer": "State of Example",
+        "key_facts": [
+          "Plate number present",
+          "Make: Subaru Outback 2020",
+          "Valid through: 04/30/2027"
+        ],
+        "topics": [
+          "vehicle",
+          "registration",
+          "car",
+          "subaru",
+          "outback",
+          "plate"
+        ]
+      }
+    },
+    {
+      "id": "gen_bill_ua",
+      "tags": [
+        "photo",
+        "generated",
+        "non_english",
+        "payment_due"
+      ],
+      "mime": "image/jpeg",
+      "expected_type": "utility_bill",
+      "expected_blocked": false,
+      "expected_expires_on": "2026-12-20",
+      "latency_ms": 3858,
+      "predicted_type": "utility_bill",
+      "confidence": 0.98,
+      "blocked": false,
+      "tokens_in": 2785,
+      "tokens_out": 516,
+      "cost_usd": 0.0021255,
+      "expires_on": "2026-12-20",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "612,40"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Gas Utility Bill",
+        "holder": null,
+        "issuer": "Газопостачання",
+        "key_facts": [
+          "Account number present",
+          "Total due: 612,40 грн",
+          "Payment due date: 20.12.2026",
+          "Billing period: листопад 2026"
+        ],
+        "topics": [
+          "bill",
+          "gas",
+          "utility",
+          "payment",
+          "invoice"
+        ]
+      }
+    },
+    {
+      "id": "gen_card_photo",
+      "tags": [
+        "photo",
+        "generated",
+        "blacklist"
+      ],
+      "mime": "image/jpeg",
+      "expected_type": "bank_card_or_check",
+      "expected_blocked": true,
+      "expected_expires_on": null,
+      "latency_ms": 1476,
+      "predicted_type": "bank_card_or_check",
+      "confidence": 1.0,
+      "blocked": true,
+      "tokens_in": 1341,
+      "tokens_out": 57,
+      "cost_usd": 0.0005448
+    },
+    {
+      "id": "gen_void_check",
+      "tags": [
+        "photo",
+        "generated",
+        "blacklist"
+      ],
+      "mime": "image/jpeg",
+      "expected_type": "bank_card_or_check",
+      "expected_blocked": true,
+      "expected_expires_on": null,
+      "latency_ms": 1328,
+      "predicted_type": "bank_card_or_check",
+      "confidence": 1.0,
+      "blocked": true,
+      "tokens_in": 1341,
+      "tokens_out": 52,
+      "cost_usd": 0.0005323
+    },
+    {
+      "id": "gen_backup_codes",
+      "tags": [
+        "photo",
+        "generated",
+        "blacklist"
+      ],
+      "mime": "image/jpeg",
+      "expected_type": "credentials_or_secrets",
+      "expected_blocked": true,
+      "expected_expires_on": null,
+      "latency_ms": 1257,
+      "predicted_type": "credentials_or_secrets",
+      "confidence": 1.0,
+      "blocked": true,
+      "tokens_in": 1341,
+      "tokens_out": 43,
+      "cost_usd": 0.0005097999999999999
+    },
+    {
+      "id": "gen_passport",
+      "tags": [
+        "photo",
+        "generated",
+        "identity"
+      ],
+      "mime": "image/jpeg",
+      "expected_type": "passport",
+      "expected_blocked": false,
+      "expected_expires_on": "2032-06-09",
+      "latency_ms": 4257,
+      "predicted_type": "passport",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 2783,
+      "tokens_out": 495,
+      "cost_usd": 0.0020724,
+      "expires_on": "2032-06-09",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "X00123456"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Passport - JANE SAMPLE",
+        "holder": "JANE SAMPLE",
+        "issuer": "COUNTRY OF EXAMPLE",
+        "key_facts": [
+          "Passport number present",
+          "Date of birth present",
+          "Date of issue: 10 JUN 2022",
+          "Date of expiration: 09 JUN 2032"
+        ],
+        "topics": [
+          "passport",
+          "travel document",
+          "identification",
+          "country of example"
+        ]
+      }
+    },
+    {
+      "id": "gen_driver_license",
+      "tags": [
+        "photo",
+        "generated",
+        "identity"
+      ],
+      "mime": "image/jpeg",
+      "expected_type": "drivers_license",
+      "expected_blocked": false,
+      "expected_expires_on": "2029-08-22",
+      "latency_ms": 3601,
+      "predicted_type": "drivers_license",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 2785,
+      "tokens_out": 472,
+      "cost_usd": 0.0020155,
+      "expires_on": "2029-08-22",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "EX-994-201-88"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Driver License - MARK SAMPLE",
+        "holder": "MARK SAMPLE",
+        "issuer": "STATE OF EXAMPLE",
+        "key_facts": [
+          "Driver license number present",
+          "Date of birth present",
+          "Home address present",
+          "Class: C",
+          "ISS: 04/15/2024",
+          "EXP: 08/22/2029"
+        ],
+        "topics": [
+          "driver license",
+          "identification",
+          "state of example",
+          "class c"
+        ]
+      }
+    },
+    {
+      "id": "gen_visa",
+      "tags": [
+        "photo",
+        "generated",
+        "identity",
+        "rotated"
+      ],
+      "mime": "image/jpeg",
+      "expected_type": "visa",
+      "expected_blocked": false,
+      "expected_expires_on": "2036-01-14",
+      "latency_ms": 3722,
+      "predicted_type": "visa",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 2783,
+      "tokens_out": 510,
+      "cost_usd": 0.0021099,
+      "expires_on": "2036-01-14",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "2026000419283"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Visa - MARK SAMPLE",
+        "holder": "MARK SAMPLE",
+        "issuer": "COUNTRY OF EXAMPLE",
+        "key_facts": [
+          "Visa type present",
+          "Control number present",
+          "Issue Date: •••2026",
+          "Expiration Date: •••2036",
+          "Entries: M"
+        ],
+        "topics": [
+          "visa",
+          "travel",
+          "b1/b2",
+          "country of example",
+          "expiration",
+          "control number"
+        ]
+      }
+    },
+    {
+      "id": "gen_green_card",
+      "tags": [
+        "photo",
+        "generated",
+        "identity"
+      ],
+      "mime": "image/jpeg",
+      "expected_type": "green_card",
+      "expected_blocked": false,
+      "expected_expires_on": "2031-03-12",
+      "latency_ms": 3701,
+      "predicted_type": "green_card",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 2785,
+      "tokens_out": 491,
+      "cost_usd": 0.002063,
+      "expires_on": "2031-03-12",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "EXM0001234567"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Permanent Resident Card - ELLA SAMPLE",
+        "holder": "ELLA SAMPLE",
+        "issuer": "Exampleland",
+        "key_facts": [
+          "Card expires on 03/12/2031",
+          "Resident since 03/12/2021",
+          "Category: IR1",
+          "Card number present"
+        ],
+        "topics": [
+          "green card",
+          "permanent resident card",
+          "identity card",
+          "residency",
+          "sample document"
+        ]
+      }
+    }
+  ],
+  "questions": [
+    {
+      "question": "How much is the Northfield Energy bill?",
+      "hard": false,
+      "expected": [
+        "gen_power_bill"
+      ],
+      "routed": [
+        "gen_power_bill"
+      ],
+      "found": true,
+      "answer": "The Northfield Energy bill amount due is $142.87 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1379,
+      "cost_usd": 0.0012060999999999999,
+      "tokens_in": 3012,
+      "tokens_out": 121,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "When is the Northfield Energy bill due?",
+      "hard": false,
+      "expected": [
+        "gen_power_bill"
+      ],
+      "routed": [
+        "gen_power_bill"
+      ],
+      "found": true,
+      "answer": "The Northfield Energy utility bill is due on December 12, 2026 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1315,
+      "cost_usd": 0.0012306,
+      "tokens_in": 3027,
+      "tokens_out": 129,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "How much did we pay at Blue Oak Diner?",
+      "hard": false,
+      "expected": [
+        "gen_diner_receipt"
+      ],
+      "routed": [
+        "gen_diner_receipt"
+      ],
+      "found": true,
+      "answer": "You paid 23.55 at Blue Oak Diner [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1492,
+      "cost_usd": 0.0012019,
+      "tokens_in": 3023,
+      "tokens_out": 118,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "When does the Pioneer auto insurance card expire?",
+      "hard": false,
+      "expected": [
+        "gen_auto_card"
+      ],
+      "routed": [
+        "gen_auto_card"
+      ],
+      "found": true,
+      "answer": "The Pioneer auto insurance card expires on 05/31/2027 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1460,
+      "cost_usd": 0.0012223,
+      "tokens_in": 3016,
+      "tokens_out": 127,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "Until when is the dishwasher warranty valid?",
+      "hard": false,
+      "expected": [
+        "gen_warranty"
+      ],
+      "routed": [
+        "gen_warranty"
+      ],
+      "found": true,
+      "answer": "The KitchenPro dishwasher warranty is valid until March 9, 2028 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1230,
+      "cost_usd": 0.0012144,
+      "tokens_in": 3023,
+      "tokens_out": 123,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "What is the minimum payment on the Summit Mastercard?",
+      "hard": false,
+      "expected": [
+        "gen_card_stmt"
+      ],
+      "routed": [
+        "gen_card_stmt"
+      ],
+      "found": true,
+      "answer": "The minimum payment due on the Summit Bank Mastercard is $45.00 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1459,
+      "cost_usd": 0.0012172,
+      "tokens_in": 3024,
+      "tokens_out": 124,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "How much rent does Mark pay?",
+      "hard": false,
+      "expected": [
+        "gen_lease"
+      ],
+      "routed": [
+        "gen_lease"
+      ],
+      "found": true,
+      "answer": "Mark pays a monthly rent of $1,850.00 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1377,
+      "cost_usd": 0.0011960999999999999,
+      "tokens_in": 3012,
+      "tokens_out": 117,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "Скільки треба заплатити за газ і до якого числа?",
+      "hard": false,
+      "expected": [
+        "gen_bill_ua"
+      ],
+      "routed": [
+        "gen_bill_ua"
+      ],
+      "found": true,
+      "answer": "За газ треба сплатити 612,40 грн до 20.12.2026 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1423,
+      "cost_usd": 0.0012971,
+      "tokens_in": 3032,
+      "tokens_out": 155,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "When does Jane's passport expire?",
+      "hard": false,
+      "expected": [
+        "gen_passport"
+      ],
+      "routed": [
+        "gen_passport"
+      ],
+      "found": true,
+      "answer": "Jane's passport expires on 09 JUN 2032 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1426,
+      "cost_usd": 0.0012339,
+      "tokens_in": 3113,
+      "tokens_out": 120,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "When does Mark's driver license expire?",
+      "hard": false,
+      "expected": [
+        "gen_driver_license"
+      ],
+      "routed": [
+        "gen_driver_license"
+      ],
+      "found": true,
+      "answer": "Mark's driver license expires on 08/22/2029 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1324,
+      "cost_usd": 0.001241,
+      "tokens_in": 3070,
+      "tokens_out": 128,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "What type of visa does Mark have?",
+      "hard": false,
+      "expected": [
+        "gen_visa"
+      ],
+      "routed": [
+        "gen_visa"
+      ],
+      "found": true,
+      "answer": "Mark has a B1/B2 visa [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1375,
+      "cost_usd": 0.0011828,
+      "tokens_in": 3026,
+      "tokens_out": 110,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "When does Ella's green card expire?",
+      "hard": false,
+      "expected": [
+        "gen_green_card"
+      ],
+      "routed": [
+        "gen_green_card"
+      ],
+      "found": true,
+      "answer": "Ella's green card expires on 03/12/2031 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1358,
+      "cost_usd": 0.0012419,
+      "tokens_in": 3048,
+      "tokens_out": 131,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "Which car is the Subaru registration for, and until when is it valid?",
+      "hard": false,
+      "expected": [
+        "gen_registration"
+      ],
+      "routed": [
+        "gen_registration"
+      ],
+      "found": true,
+      "answer": "The registration is for a Subaru Outback 2020 (Plate: 8KLM204) [1] and is valid through 04/30/2027 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1653,
+      "cost_usd": 0.0013549,
+      "tokens_in": 3008,
+      "tokens_out": 181,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "How much did Ella earn in wages in 2025?",
+      "hard": false,
+      "expected": [
+        "gen_w2"
+      ],
+      "routed": [
+        "gen_w2"
+      ],
+      "found": true,
+      "answer": "Ella earned 54,300.00 in wages, tips, and other compensation in 2025 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1360,
+      "cost_usd": 0.0012779,
+      "tokens_in": 3043,
+      "tokens_out": 146,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "How many years is Mark's visa valid in total?",
+      "hard": false,
+      "expected": [
+        "gen_visa"
+      ],
+      "routed": [
+        "gen_visa"
+      ],
+      "found": true,
+      "answer": "Mark's visa is valid for 10 years in total, from the issue date of 15JAN2026 to the expiration date of 14JAN2036 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1368,
+      "cost_usd": 0.0013155999999999999,
+      "tokens_in": 3052,
+      "tokens_out": 160,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "Which of Mark's documents expires first, the driver license or the visa?",
+      "hard": false,
+      "expected": [
+        "gen_driver_license",
+        "gen_visa"
+      ],
+      "routed": [
+        "gen_driver_license",
+        "gen_visa"
+      ],
+      "found": true,
+      "answer": "Mark's driver license expires first on 08/22/2029 [1], while his visa expires on 14JAN2036 [2].",
+      "citations": 2,
+      "dropped_citations": 0,
+      "latency_ms": 1481,
+      "cost_usd": 0.0014429999999999998,
+      "tokens_in": 3185,
+      "tokens_out": 195,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "Коли expires green card у Елли?",
+      "hard": false,
+      "expected": [
+        "gen_green_card"
+      ],
+      "routed": [
+        "gen_green_card"
+      ],
+      "found": true,
+      "answer": "Ella's green card expires on 03/12/2031 [1].",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1577,
+      "cost_usd": 0.0012334999999999998,
+      "tokens_in": 3045,
+      "tokens_out": 128,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "What is Leo's passport number?",
+      "hard": false,
+      "expected": [],
+      "routed": [],
+      "found": false,
+      "answer": "I could not find this in your documents.",
+      "citations": 0,
+      "dropped_citations": 0,
+      "latency_ms": 607,
+      "cost_usd": 0.0008541,
+      "tokens_in": 2622,
+      "tokens_out": 27,
+      "abstained": true
+    }
+  ]
+}
