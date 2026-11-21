@@ -32,6 +32,9 @@ class DocType(StrEnum):
     VEHICLE_INSPECTION = "vehicle_inspection"
     WARRANTY = "warranty"
     RECEIPT = "receipt"
+    # Finance (statements and tax forms are stored; card images and checks are blacklisted below)
+    BANK_STATEMENT = "bank_statement"
+    TAX_DOCUMENT = "tax_document"
     # Blacklisted: never stored
     MILITARY_OR_FEDERAL_ID = "military_or_federal_id"
     NATURALIZATION_CERTIFICATE = "naturalization_certificate"
@@ -97,14 +100,15 @@ class Extraction(BaseModel):
         description="Money amounts: premiums, rent, deductibles, coverage limits, fees, penalties, totals due.",
     )
     expires_on: str | None = Field(
-        description="Expiration / end-of-validity date as YYYY-MM-DD. Null if the document has none or it is unreadable.",
+        description="Expiration / end of validity / contract end as YYYY-MM-DD. Not a payment due date. "
+        "Null if the document has none or it is unreadable.",
     )
     expires_on_quote: str | None = Field(
         description="Exact substring of full_text that states the expiration date. Null if expires_on is null.",
     )
     payment_due_on: str | None = Field(
         default=None,
-        description="Explicit payment due date on a utility bill as YYYY-MM-DD. Null if absent or ambiguous.",
+        description="Explicit payment due date on a bill, invoice, credit card statement or tax bill as YYYY-MM-DD. Null if absent or ambiguous.",
     )
     payment_due_on_quote: str | None = Field(
         default=None,
@@ -117,6 +121,11 @@ class Extraction(BaseModel):
 
 
 class RouteDecision(BaseModel):
+    standalone_question: str = Field(
+        default="",
+        description="The current question rewritten to be understandable without the conversation "
+        "(resolve 'it', 'that policy', 'and the deductible?'). Same language as the question.",
+    )
     document_ids: list[str] = Field(description="IDs of documents likely to contain the answer, best first. Empty if none.")
 
 
@@ -127,5 +136,18 @@ class Citation(BaseModel):
 
 class ChatAnswer(BaseModel):
     found: bool = Field(description="False if the provided documents do not contain the answer.")
-    answer: str = Field(description="Answer in the language of the question. If not found, say so briefly.")
+    answer: str = Field(
+        description="Answer in the language of the question, with markers like [1] after each claim that refer to "
+        "citations by 1-based position. If not found, say so briefly.",
+    )
     citations: list[Citation]
+
+
+class Source(BaseModel):
+    """A verified citation as returned to the client: `n` matches the [n] marker in the answer text."""
+
+    n: int
+    document_id: str
+    document_title: str
+    category: str
+    quote: str

@@ -25,6 +25,9 @@ LEASE_SECONDS = 300
 MAX_ATTEMPTS = 3
 SCHEMA_VERSION = 2
 
+# Documents whose key deadline is a payment due date (Extraction.payment_due_on).
+PAYMENT_TYPES = {DocType.UTILITY_BILL, DocType.BANK_STATEMENT, DocType.TAX_DOCUMENT}
+
 _DEADLINE_KIND: dict[DocType, str] = {
     DocType.AUTO_INSURANCE: "INSURANCE_EXPIRATION",
     DocType.HOME_INSURANCE: "INSURANCE_EXPIRATION",
@@ -36,6 +39,8 @@ _DEADLINE_KIND: dict[DocType, str] = {
     DocType.SUBSCRIPTION: "CONTRACT_EXPIRATION",
     DocType.UTILITY_BILL: "PAYMENT_DUE",
     DocType.WARRANTY: "WARRANTY_EXPIRATION",
+    DocType.BANK_STATEMENT: "PAYMENT_DUE",
+    DocType.TAX_DOCUMENT: "PAYMENT_DUE",
 }
 
 
@@ -172,7 +177,7 @@ def publish_result(session: Session, job: ClaimedJob, result: AnalysisResult) ->
         main_model = result.usage.calls[-1].model if result.usage.calls else "unknown"
         warnings = list(result.warnings)
         payment_due_on = None
-        if doc_type is DocType.UTILITY_BILL:
+        if doc_type in PAYMENT_TYPES:
             payment_due_on = validated_date(
                 "payment_due_on", extraction.payment_due_on, extraction.payment_due_on_quote,
                 extraction.full_text, warnings,
@@ -225,7 +230,7 @@ def publish_result(session: Session, job: ClaimedJob, result: AnalysisResult) ->
              "model": main_model, "pv": result.prompt_version},
         )
 
-        if doc_type is DocType.UTILITY_BILL:
+        if doc_type in PAYMENT_TYPES and (payment_due_on or not result.expires_on):
             deadline_date = payment_due_on
             candidate_key = "payment_due_on"
             deadline_quote = extraction.payment_due_on_quote

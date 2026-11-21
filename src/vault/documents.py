@@ -77,19 +77,36 @@ class Share(BaseModel):
     family_id: UUID
 
 
+# ISO-BMFF brands written by iPhone cameras and other HEIF encoders (bytes 8..12, after "ftyp").
+HEIC_BRANDS = {b"heic", b"heix", b"hevc", b"hevx"}
+HEIF_BRANDS = {b"mif1", b"msf1", b"heim", b"heis"}
+# Browsers often send HEIC photos without a specific media type.
+HEIF_DECLARED = {"image/heic", "image/heif", "image/heic-sequence", "image/heif-sequence", "application/octet-stream", "", None}
+
+
 def validate_file(data, name, mime):
+    """Check extension, declared media type and file signature. Returns the canonical media type."""
+    suffix = Path(name).suffix.lower()
+    if suffix in (".heic", ".heif"):
+        brand = data[8:12] if data[4:8] == b"ftyp" else b""
+        if mime in HEIF_DECLARED and brand in HEIC_BRANDS:
+            return "image/heic"
+        if mime in HEIF_DECLARED and brand in HEIF_BRANDS:
+            return "image/heif"
+        raise HTTPException(415, "File extension, media type or signature unsupported")
     types = {
         ".pdf": ("application/pdf", b"%PDF-"),
         ".png": ("image/png", b"\x89PNG\r\n\x1a\n"),
         ".jpg": ("image/jpeg", b"\xff\xd8\xff"),
         ".jpeg": ("image/jpeg", b"\xff\xd8\xff"),
     }
-    kind = types.get(Path(name).suffix.lower())
+    kind = types.get(suffix)
     if not kind or kind[0] != mime or not data.startswith(kind[1]):
         raise HTTPException(415, "File extension, media type or signature unsupported")
     # No local parsing: Gemini reads the file. Size is capped by MAX_UPLOAD_MB in upload().
     if mime == "application/pdf" and b"/Encrypt" in data:
         raise HTTPException(422, "Password-protected PDFs are not supported")
+    return mime
 
 
 @router.post("", status_code=202)
@@ -106,7 +123,7 @@ def upload(
         raise HTTPException(413, "File too large")
     name = Path((file.filename or "").replace(chr(92), "/")).name
     name = "".join(c for c in name if c.isprintable())[:255]
-    validate_file(data, name, file.content_type)
+    media_type = validate_file(data, name, file.content_type)
     key = uuid4()
     path = stored_path(key)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -128,7 +145,7 @@ def upload(
                 id=id,
                 key=key,
                 name=name,
-                mime=file.content_type,
+                mime=media_type,
                 size=len(data),
                 hash=hashlib.sha256(data).hexdigest(),
             )

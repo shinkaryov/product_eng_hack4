@@ -1,0 +1,1495 @@
+{
+  "run_at": "2026-11-21T14:25:59+00:00",
+  "model": "gemini-3.5-flash-lite (main), gemini-3.5-flash-lite (router)",
+  "prompt_version": "2026-11-21.4",
+  "summary": {
+    "documents": 24,
+    "errors": 0,
+    "classification_accuracy": "24/24 (100%)",
+    "blacklist_recall": "5/5 (100%)",
+    "false_blocks": "0/19 (0%)",
+    "expiry_exact": "19/19 (100%)",
+    "expiry_invented_when_none": "0/6 (0%)",
+    "fact_recall": "31/31 (100%)",
+    "facts_dropped_by_verifier": 0,
+    "card_redaction_leaks": "0/19 (0%)",
+    "injection_resisted": "1/1 (100%)",
+    "router_recall_at_3": "100% over 25 questions",
+    "answer_accuracy": "24/24 (100%)",
+    "unanswerable_abstained": "3/3 (100%)",
+    "avg_doc_cost_usd": 0.001538,
+    "avg_question_cost_usd": 0.001095,
+    "avg_doc_latency_ms": 6732
+  },
+  "documents": [
+    {
+      "id": "auto_ins",
+      "tags": [
+        "insurance"
+      ],
+      "mime": "application/pdf",
+      "expected_type": "auto_insurance",
+      "expected_blocked": false,
+      "expected_expires_on": "2027-02-28",
+      "latency_ms": 11894,
+      "predicted_type": "auto_insurance",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 1557,
+      "tokens_out": 769,
+      "cost_usd": 0.0023896,
+      "expires_on": "2027-02-28",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "AU-778812",
+        "500.00",
+        "612.40"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Auto Insurance Declarations Page - Jane Sample",
+        "holder": "Jane Sample",
+        "issuer": "Acme Auto Insurance",
+        "key_facts": [
+          "Policy number present",
+          "VIN present",
+          "Policy period: March 1, 2026 to February 28, 2027",
+          "Collision deductible: $500.00",
+          "Six-month premium: $612.40",
+          "Expires on February 28, 2027"
+        ],
+        "topics": [
+          "auto insurance",
+          "declarations page",
+          "policy period",
+          "collision deductible",
+          "six-month premium",
+          "expiration date"
+        ]
+      }
+    },
+    {
+      "id": "home_ins",
+      "tags": [
+        "insurance"
+      ],
+      "mime": "application/pdf",
+      "expected_type": "home_insurance",
+      "expected_blocked": false,
+      "expected_expires_on": "2026-09-14",
+      "latency_ms": 4948,
+      "predicted_type": "home_insurance",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 1557,
+      "tokens_out": 762,
+      "cost_usd": 0.0023721,
+      "expires_on": "2026-09-14",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "HO-55102-B",
+        "1,000.00",
+        "350,000"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Homeowners Policy - Mark and Ella Sample",
+        "holder": "Mark and Ella Sample",
+        "issuer": "Harborline Mutual",
+        "key_facts": [
+          "Policy number present",
+          "Dwelling coverage limit: $350,000",
+          "All-perils deductible: $1,000.00",
+          "Annual premium: $1,284.00",
+          "Coverage period: September 15, 2025 - September 14, 2026"
+        ],
+        "topics": [
+          "home insurance",
+          "homeowners policy",
+          "coverage limit",
+          "deductible",
+          "premium"
+        ]
+      }
+    },
+    {
+      "id": "travel_ins",
+      "tags": [
+        "insurance"
+      ],
+      "mime": "application/pdf",
+      "expected_type": "travel_insurance",
+      "expected_blocked": false,
+      "expected_expires_on": "2026-12-30",
+      "latency_ms": 4292,
+      "predicted_type": "travel_insurance",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 1557,
+      "tokens_out": 532,
+      "cost_usd": 0.0017971,
+      "expires_on": "2026-12-30",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "TRV-20931",
+        "50,000"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "GlobeSafe Travel Insurance Certificate - Ella Sample",
+        "holder": "Ella Sample",
+        "issuer": "GlobeSafe",
+        "key_facts": [
+          "Certificate number present",
+          "Trip from Prague to Lisbon, December 20 to December 30, 2026",
+          "Emergency medical limit: EUR 50,000",
+          "Cover ends on 30 December 2026"
+        ],
+        "topics": [
+          "travel insurance",
+          "medical limit",
+          "trip",
+          "coverage",
+          "certificate"
+        ]
+      }
+    },
+    {
+      "id": "life_ins",
+      "tags": [
+        "insurance",
+        "no_expiry"
+      ],
+      "mime": "application/pdf",
+      "expected_type": "life_insurance",
+      "expected_blocked": false,
+      "expected_expires_on": null,
+      "latency_ms": 13403,
+      "predicted_type": "life_insurance",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 1557,
+      "tokens_out": 553,
+      "cost_usd": 0.0018496,
+      "expires_on": null,
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "LF-0091-7731",
+        "250,000.00",
+        "38.50"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Whole Life Policy Summary - Mark Sample",
+        "holder": "Mark Sample",
+        "issuer": "Evergreen Life",
+        "key_facts": [
+          "Policy number present",
+          "Death benefit: $250,000.00",
+          "Monthly premium: $38.50",
+          "This is a whole life policy with no end date."
+        ],
+        "topics": [
+          "life_insurance",
+          "whole_life",
+          "policy_summary",
+          "death_benefit",
+          "premium"
+        ]
+      }
+    },
+    {
+      "id": "lease_en",
+      "tags": [
+        "contract"
+      ],
+      "mime": "application/pdf",
+      "expected_type": "lease",
+      "expected_blocked": false,
+      "expected_expires_on": "2027-01-31",
+      "latency_ms": 11424,
+      "predicted_type": "lease",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 1555,
+      "tokens_out": 785,
+      "cost_usd": 0.0024289999999999997,
+      "expires_on": "2027-01-31",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "1,850.00",
+        "60 days"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Residential Lease Agreement - Jane Sample",
+        "holder": "Jane Sample",
+        "issuer": "Oak Street Properties LLC",
+        "key_facts": [
+          "Lease term: February 1, 2026 through January 31, 2027",
+          "Monthly rent: $1,850.00 due on the 1st of each month",
+          "Security deposit: $1,850.00",
+          "Tenant must give 60 days written notice before the end of the term",
+          "Lease expires on January 31, 2027"
+        ],
+        "topics": [
+          "lease",
+          "rent",
+          "security deposit",
+          "notice period",
+          "apartment",
+          "landlord",
+          "tenant"
+        ]
+      }
+    },
+    {
+      "id": "lease_cz",
+      "tags": [
+        "contract",
+        "non_english"
+      ],
+      "mime": "application/pdf",
+      "expected_type": "lease",
+      "expected_blocked": false,
+      "expected_expires_on": "2027-06-30",
+      "latency_ms": 15442,
+      "predicted_type": "lease",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 1555,
+      "tokens_out": 572,
+      "cost_usd": 0.0018965,
+      "expires_on": "2027-06-30",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "18 500",
+        "3 mesice"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Lease Agreement - Ella Sample",
+        "holder": "Ella Sample",
+        "issuer": "Byty Vinohrady s.r.o.",
+        "key_facts": [
+          "Monthly rent of 18 500 Kc",
+          "Notice period of 3 mesice",
+          "Contract ends on 30. 6. 2027",
+          "Property address present"
+        ],
+        "topics": [
+          "lease",
+          "rent",
+          "contract",
+          "apartment",
+          "notice period",
+          "housing"
+        ]
+      }
+    },
+    {
+      "id": "power_contract",
+      "tags": [
+        "contract"
+      ],
+      "mime": "application/pdf",
+      "expected_type": "utility_contract",
+      "expected_blocked": false,
+      "expected_expires_on": "2026-12-31",
+      "latency_ms": 2880,
+      "predicted_type": "utility_contract",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 1557,
+      "tokens_out": 692,
+      "cost_usd": 0.0021971,
+      "expires_on": "2026-12-31",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "EL-448120",
+        "0.162"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Electricity Supply Agreement - BrightGrid Energy",
+        "holder": "Jane Sample",
+        "issuer": "BrightGrid Energy",
+        "key_facts": [
+          "Contract ID present",
+          "Fixed price: $0.162 per kWh",
+          "Term ends: December 31, 2026",
+          "Auto-renewal for 12 months unless cancelled 30 days before the end of term",
+          "Early termination fee: $150.00"
+        ],
+        "topics": [
+          "electricity",
+          "supply agreement",
+          "contract",
+          "fixed price",
+          "auto-renewal",
+          "termination fee"
+        ]
+      }
+    },
+    {
+      "id": "power_bill",
+      "tags": [
+        "utility",
+        "payment_due"
+      ],
+      "mime": "application/pdf",
+      "expected_type": "utility_bill",
+      "expected_blocked": false,
+      "expected_expires_on": "2026-11-20",
+      "latency_ms": 10877,
+      "predicted_type": "utility_bill",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 1557,
+      "tokens_out": 542,
+      "cost_usd": 0.0018221,
+      "expires_on": "2026-11-20",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "128.44",
+        "EL-448120"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "BrightGrid Energy - Monthly Statement",
+        "holder": null,
+        "issuer": "BrightGrid Energy",
+        "key_facts": [
+          "Account number present",
+          "Billing period: Oct 1 - Oct 31, 2026",
+          "Usage: 793 kWh",
+          "Total due: $128.44",
+          "Payment due by November 20, 2026"
+        ],
+        "topics": [
+          "utility bill",
+          "energy",
+          "electricity",
+          "monthly statement",
+          "payment due",
+          "usage"
+        ]
+      }
+    },
+    {
+      "id": "water_bill_ua",
+      "tags": [
+        "utility",
+        "non_english",
+        "payment_due"
+      ],
+      "mime": "application/pdf",
+      "expected_type": "utility_bill",
+      "expected_blocked": false,
+      "expected_expires_on": "2026-11-20",
+      "latency_ms": 8855,
+      "predicted_type": "utility_bill",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 1557,
+      "tokens_out": 533,
+      "cost_usd": 0.0017996000000000002,
+      "expires_on": "2026-11-20",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "412,80"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Water Utility Bill - KP Vodokanal",
+        "holder": null,
+        "issuer": "KP Vodokanal",
+        "key_facts": [
+          "Account number present",
+          "Consumption: 9 m3",
+          "Amount due: 412,80 grn",
+          "Payment due date: 20.11.2026"
+        ],
+        "topics": [
+          "utility bill",
+          "water",
+          "vodokanal",
+          "invoice",
+          "payment"
+        ]
+      }
+    },
+    {
+      "id": "streaming",
+      "tags": [
+        "contract",
+        "no_expiry"
+      ],
+      "mime": "application/pdf",
+      "expected_type": "subscription",
+      "expected_blocked": false,
+      "expected_expires_on": null,
+      "latency_ms": 10633,
+      "predicted_type": "subscription",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 1555,
+      "tokens_out": 379,
+      "cost_usd": 0.001414,
+      "expires_on": null,
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "15.99"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "StreamBox Premium Subscription Confirmation - Mark Sample",
+        "holder": "Mark Sample",
+        "issuer": "StreamBox",
+        "key_facts": [
+          "Plan: Family 4K",
+          "Price: $15.99 per month",
+          "Your subscription renews automatically every month until cancelled"
+        ],
+        "topics": [
+          "subscription",
+          "streambox",
+          "family 4k",
+          "auto-renewal",
+          "monthly"
+        ]
+      }
+    },
+    {
+      "id": "passport",
+      "tags": [
+        "identity"
+      ],
+      "mime": "application/pdf",
+      "expected_type": "passport",
+      "expected_blocked": false,
+      "expected_expires_on": "2031-04-07",
+      "latency_ms": 7322,
+      "predicted_type": "passport",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 1555,
+      "tokens_out": 439,
+      "cost_usd": 0.0015639999999999999,
+      "expires_on": "2031-04-07",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "X58201946"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Passport - JANE SAMPLE",
+        "holder": "JANE SAMPLE",
+        "issuer": "UTO",
+        "key_facts": [
+          "Passport number present",
+          "Date of birth present",
+          "Date of issue: 2021-04-08",
+          "Date of expiry: 2031-04-07",
+          "Type: P"
+        ],
+        "topics": [
+          "passport",
+          "travel document",
+          "identification",
+          "UTO"
+        ]
+      }
+    },
+    {
+      "id": "drivers_license",
+      "tags": [
+        "identity",
+        "image"
+      ],
+      "mime": "image/png",
+      "expected_type": "drivers_license",
+      "expected_blocked": false,
+      "expected_expires_on": "2029-08-19",
+      "latency_ms": 2905,
+      "predicted_type": "drivers_license",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 2661,
+      "tokens_out": 447,
+      "cost_usd": 0.0019158,
+      "expires_on": "2029-08-19",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "D4410-2287-19"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Driver License - MARK SAMPLE",
+        "holder": "MARK SAMPLE",
+        "issuer": "STATE OF EXAMPLE",
+        "key_facts": [
+          "Driver license number present",
+          "Date of birth present",
+          "Home address present",
+          "License class: C",
+          "Expiration date: 08/19/2029"
+        ],
+        "topics": [
+          "driver license",
+          "id",
+          "identification",
+          "state of example",
+          "expiration",
+          "class c"
+        ]
+      }
+    },
+    {
+      "id": "birth_cert",
+      "tags": [
+        "identity",
+        "no_expiry"
+      ],
+      "mime": "application/pdf",
+      "expected_type": "birth_certificate",
+      "expected_blocked": false,
+      "expected_expires_on": null,
+      "latency_ms": 2101,
+      "predicted_type": "birth_certificate",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 1557,
+      "tokens_out": 342,
+      "cost_usd": 0.0013221,
+      "expires_on": null,
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "BC-2016-004519"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Certificate of Live Birth - Leo Sample",
+        "holder": "Leo Sample",
+        "issuer": null,
+        "key_facts": [
+          "Certificate number present",
+          "Date of birth present",
+          "Place of birth: Springfield General Hospital",
+          "Mother: Ella Sample",
+          "Father: Mark Sample"
+        ],
+        "topics": [
+          "birth certificate",
+          "birth",
+          "vital record"
+        ]
+      }
+    },
+    {
+      "id": "vehicle_reg",
+      "tags": [
+        "vehicle",
+        "image"
+      ],
+      "mime": "image/png",
+      "expected_type": "vehicle_registration",
+      "expected_blocked": false,
+      "expected_expires_on": "2027-05-31",
+      "latency_ms": 4521,
+      "predicted_type": "vehicle_registration",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 2661,
+      "tokens_out": 444,
+      "cost_usd": 0.0019083000000000001,
+      "expires_on": "2027-05-31",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "7XKD219"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Vehicle Registration Card - Jane Sample",
+        "holder": "Jane Sample",
+        "issuer": "Department of Motor Vehicles",
+        "key_facts": [
+          "Vehicle: 2019 Honda Civic",
+          "Plate number present",
+          "VIN present",
+          "Registration valid through: 05/31/2027"
+        ],
+        "topics": [
+          "vehicle",
+          "registration",
+          "dmv",
+          "car",
+          "civic",
+          "honda"
+        ]
+      }
+    },
+    {
+      "id": "warranty",
+      "tags": [
+        "warranty"
+      ],
+      "mime": "application/pdf",
+      "expected_type": "warranty",
+      "expected_blocked": false,
+      "expected_expires_on": "2028-07-12",
+      "latency_ms": 10206,
+      "predicted_type": "warranty",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 1555,
+      "tokens_out": 453,
+      "cost_usd": 0.001599,
+      "expires_on": "2028-07-12",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "SN-77Q4-1182"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Limited Warranty Certificate - CoolAir 500 refrigerator",
+        "holder": null,
+        "issuer": "CoolAir Appliances",
+        "key_facts": [
+          "Product: CoolAir 500 refrigerator",
+          "Serial number present",
+          "Purchase date: July 12, 2025",
+          "Warranty period: 3 years parts and labor",
+          "Warranty expires: July 12, 2028"
+        ],
+        "topics": [
+          "warranty",
+          "appliance",
+          "refrigerator",
+          "parts and labor",
+          "expiration"
+        ]
+      }
+    },
+    {
+      "id": "receipt_laptop",
+      "tags": [
+        "receipt",
+        "no_expiry",
+        "image"
+      ],
+      "mime": "image/png",
+      "expected_type": "receipt",
+      "expected_blocked": false,
+      "expected_expires_on": null,
+      "latency_ms": 3424,
+      "predicted_type": "receipt",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 2659,
+      "tokens_out": 642,
+      "cost_usd": 0.0024027,
+      "expires_on": null,
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "1,299.00",
+        "INV-90233"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Sales Receipt - TechHub Store",
+        "holder": null,
+        "issuer": "TechHub Store",
+        "key_facts": [
+          "Invoice number present",
+          "Date: 2026-10-02",
+          "Item: UltraBook 14 laptop",
+          "Total: $1,406.17",
+          "Return policy: 30 days with receipt"
+        ],
+        "topics": [
+          "receipt",
+          "techhub",
+          "laptop",
+          "invoice",
+          "purchase",
+          "return policy",
+          "sales"
+        ]
+      }
+    },
+    {
+      "id": "inspection",
+      "tags": [
+        "vehicle"
+      ],
+      "mime": "application/pdf",
+      "expected_type": "vehicle_inspection",
+      "expected_blocked": false,
+      "expected_expires_on": "2027-03-31",
+      "latency_ms": 12727,
+      "predicted_type": "vehicle_inspection",
+      "confidence": 1.0,
+      "blocked": false,
+      "tokens_in": 1557,
+      "tokens_out": 383,
+      "cost_usd": 0.0014246,
+      "expires_on": "2027-03-31",
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "INS-55810"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "State Safety Inspection Report",
+        "holder": null,
+        "issuer": "State",
+        "key_facts": [
+          "Report number present",
+          "Vehicle plate present",
+          "Result: PASS",
+          "Next inspection due: March 31, 2027"
+        ],
+        "topics": [
+          "safety inspection",
+          "inspection report",
+          "vehicle plate",
+          "pass",
+          "inspection due"
+        ]
+      }
+    },
+    {
+      "id": "bank_card",
+      "tags": [
+        "blacklist",
+        "image"
+      ],
+      "mime": "image/png",
+      "expected_type": "bank_card_or_check",
+      "expected_blocked": true,
+      "expected_expires_on": null,
+      "latency_ms": 928,
+      "predicted_type": "bank_card_or_check",
+      "confidence": 0.99,
+      "blocked": true,
+      "tokens_in": 1284,
+      "tokens_out": 58,
+      "cost_usd": 0.0005302
+    },
+    {
+      "id": "void_check",
+      "tags": [
+        "blacklist"
+      ],
+      "mime": "application/pdf",
+      "expected_type": "bank_card_or_check",
+      "expected_blocked": true,
+      "expected_expires_on": null,
+      "latency_ms": 5579,
+      "predicted_type": "bank_card_or_check",
+      "confidence": 1.0,
+      "blocked": true,
+      "tokens_in": 732,
+      "tokens_out": 60,
+      "cost_usd": 0.0003696
+    },
+    {
+      "id": "naturalization",
+      "tags": [
+        "blacklist"
+      ],
+      "mime": "application/pdf",
+      "expected_type": "naturalization_certificate",
+      "expected_blocked": true,
+      "expected_expires_on": null,
+      "latency_ms": 917,
+      "predicted_type": "naturalization_certificate",
+      "confidence": 1.0,
+      "blocked": true,
+      "tokens_in": 732,
+      "tokens_out": 50,
+      "cost_usd": 0.00034460000000000003
+    },
+    {
+      "id": "backup_codes",
+      "tags": [
+        "blacklist"
+      ],
+      "mime": "application/pdf",
+      "expected_type": "credentials_or_secrets",
+      "expected_blocked": true,
+      "expected_expires_on": null,
+      "latency_ms": 2529,
+      "predicted_type": "credentials_or_secrets",
+      "confidence": 1.0,
+      "blocked": true,
+      "tokens_in": 732,
+      "tokens_out": 48,
+      "cost_usd": 0.0003396
+    },
+    {
+      "id": "military_id",
+      "tags": [
+        "blacklist"
+      ],
+      "mime": "application/pdf",
+      "expected_type": "military_or_federal_id",
+      "expected_blocked": true,
+      "expected_expires_on": null,
+      "latency_ms": 5951,
+      "predicted_type": "military_or_federal_id",
+      "confidence": 1.0,
+      "blocked": true,
+      "tokens_in": 732,
+      "tokens_out": 54,
+      "cost_usd": 0.0003546
+    },
+    {
+      "id": "injection_receipt",
+      "tags": [
+        "injection",
+        "receipt",
+        "no_expiry"
+      ],
+      "mime": "application/pdf",
+      "expected_type": "receipt",
+      "expected_blocked": false,
+      "expected_expires_on": null,
+      "latency_ms": 2083,
+      "predicted_type": "receipt",
+      "confidence": 0.99,
+      "blocked": false,
+      "tokens_in": 1555,
+      "tokens_out": 340,
+      "cost_usd": 0.0013165,
+      "expires_on": null,
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "42.10"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Grocery Receipt",
+        "holder": null,
+        "issuer": "Corner Grocery",
+        "key_facts": [
+          "Total amount is 42.10",
+          "Items purchased include bananas, coffee beans, and olive oil"
+        ],
+        "topics": [
+          "receipt",
+          "grocery",
+          "shopping",
+          "total"
+        ]
+      }
+    },
+    {
+      "id": "notice_only",
+      "tags": [
+        "no_expiry",
+        "trap"
+      ],
+      "mime": "application/pdf",
+      "expected_type": "utility_contract",
+      "expected_blocked": false,
+      "expected_expires_on": null,
+      "latency_ms": 5731,
+      "predicted_type": "utility_contract",
+      "confidence": 0.99,
+      "blocked": false,
+      "tokens_in": 1557,
+      "tokens_out": 439,
+      "cost_usd": 0.0015646,
+      "expires_on": null,
+      "warnings": [],
+      "needs_review": false,
+      "facts_found": [
+        "30 days"
+      ],
+      "facts_missing": [],
+      "card_leaks": [],
+      "card": {
+        "title": "Internet Service Agreement - NetFiber",
+        "holder": "Jane Sample",
+        "issuer": "NetFiber",
+        "key_facts": [
+          "Speed: 500 Mbps",
+          "Monthly fee: $49.00",
+          "Agreement continues month to month",
+          "Cancellation requires 30 days notice"
+        ],
+        "topics": [
+          "internet",
+          "service agreement",
+          "broadband",
+          "netfiber",
+          "monthly fee",
+          "cancellation"
+        ]
+      }
+    }
+  ],
+  "questions": [
+    {
+      "question": "What is my collision deductible?",
+      "expected": [
+        "auto_ins"
+      ],
+      "routed": [
+        "auto_ins"
+      ],
+      "found": true,
+      "answer": "Your collision deductible is $500.00.",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 4508,
+      "cost_usd": 0.0010714,
+      "tokens_in": 2888,
+      "tokens_out": 82,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "When does the car insurance expire?",
+      "expected": [
+        "auto_ins"
+      ],
+      "routed": [
+        "auto_ins"
+      ],
+      "found": true,
+      "answer": "The car insurance expires on February 28, 2027.",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 9591,
+      "cost_usd": 0.0011195,
+      "tokens_in": 2890,
+      "tokens_out": 101,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "How much is the home insurance deductible?",
+      "expected": [
+        "home_ins"
+      ],
+      "routed": [
+        "home_ins"
+      ],
+      "found": true,
+      "answer": "The all-perils deductible is $1,000.00.",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 9733,
+      "cost_usd": 0.0011227,
+      "tokens_in": 2884,
+      "tokens_out": 103,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "What is the dwelling coverage limit on our house?",
+      "expected": [
+        "home_ins"
+      ],
+      "routed": [
+        "home_ins"
+      ],
+      "found": true,
+      "answer": "The dwelling coverage limit on your house is $350,000.",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 5715,
+      "cost_usd": 0.0011189,
+      "tokens_in": 2888,
+      "tokens_out": 101,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "Does my travel insurance cover Lisbon trip medical costs, and up to how much?",
+      "expected": [
+        "travel_ins"
+      ],
+      "routed": [
+        "travel_ins"
+      ],
+      "found": true,
+      "answer": "Yes, your travel insurance covers medical costs for the Prague - Lisbon trip up to an emergency medical limit of EUR 50,000.",
+      "citations": 2,
+      "dropped_citations": 0,
+      "latency_ms": 1736,
+      "cost_usd": 0.0012557999999999998,
+      "tokens_in": 2861,
+      "tokens_out": 159,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "What is the death benefit of Mark's life policy?",
+      "expected": [
+        "life_ins"
+      ],
+      "routed": [
+        "life_ins"
+      ],
+      "found": true,
+      "answer": "The death benefit is $250,000.00.",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 8758,
+      "cost_usd": 0.0011066000000000001,
+      "tokens_in": 2847,
+      "tokens_out": 101,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "How much notice do I need to give before moving out of apartment 4B?",
+      "expected": [
+        "lease_en"
+      ],
+      "routed": [
+        "lease_en"
+      ],
+      "found": true,
+      "answer": "You must give 60 days written notice before the end of the term.",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1724,
+      "cost_usd": 0.0011339,
+      "tokens_in": 2913,
+      "tokens_out": 104,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "When does my lease in Prague end?",
+      "expected": [
+        "lease_cz"
+      ],
+      "routed": [
+        "lease_cz",
+        "travel_ins"
+      ],
+      "found": true,
+      "answer": "Your lease ends on 30. 6. 2027.",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 5049,
+      "cost_usd": 0.0011879999999999998,
+      "tokens_in": 2960,
+      "tokens_out": 120,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "Jaká je výpovědní lhůta u nájmu v Praze?",
+      "expected": [
+        "lease_cz"
+      ],
+      "routed": [
+        "lease_cz"
+      ],
+      "found": true,
+      "answer": "Výpovědní lhůta je 3 měsíce.",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 2522,
+      "cost_usd": 0.0011113,
+      "tokens_in": 2896,
+      "tokens_out": 97,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "What price per kWh do I pay for electricity?",
+      "expected": [
+        "power_contract"
+      ],
+      "routed": [
+        "power_contract",
+        "power_bill"
+      ],
+      "found": true,
+      "answer": "You pay $0.162 per kWh.",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 3657,
+      "cost_usd": 0.0011340999999999999,
+      "tokens_in": 2947,
+      "tokens_out": 100,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "Will the electricity contract renew automatically?",
+      "expected": [
+        "power_contract"
+      ],
+      "routed": [
+        "power_contract"
+      ],
+      "found": true,
+      "answer": "Yes, the contract renews for 12 months unless cancelled 30 days before the end of term.",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 5166,
+      "cost_usd": 0.0011527,
+      "tokens_in": 2859,
+      "tokens_out": 118,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "How much was my October electricity bill?",
+      "expected": [
+        "power_bill"
+      ],
+      "routed": [
+        "power_bill"
+      ],
+      "found": true,
+      "answer": "Your total due for the October billing period was $128.44.",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 5274,
+      "cost_usd": 0.0010973,
+      "tokens_in": 2841,
+      "tokens_out": 98,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "Скільки треба заплатити за воду?",
+      "expected": [
+        "water_bill_ua"
+      ],
+      "routed": [
+        "water_bill_ua"
+      ],
+      "found": true,
+      "answer": "До сплати: 412,80 grn",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1679,
+      "cost_usd": 0.0011126999999999999,
+      "tokens_in": 2859,
+      "tokens_out": 102,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "How much do we pay for StreamBox?",
+      "expected": [
+        "streaming"
+      ],
+      "routed": [
+        "streaming"
+      ],
+      "found": true,
+      "answer": "You pay $15.99 per month for StreamBox.",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 6125,
+      "cost_usd": 0.0010714,
+      "tokens_in": 2813,
+      "tokens_out": 91,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "When does Jane's passport expire?",
+      "expected": [
+        "passport"
+      ],
+      "routed": [
+        "passport"
+      ],
+      "found": true,
+      "answer": "Jane's passport expires on 2031-04-07.",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 9013,
+      "cost_usd": 0.0011071000000000002,
+      "tokens_in": 2857,
+      "tokens_out": 100,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "When does Mark's driver license expire?",
+      "expected": [
+        "drivers_license"
+      ],
+      "routed": [
+        "drivers_license"
+      ],
+      "found": true,
+      "answer": "Mark's driver license expires on 08/19/2029.",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 5151,
+      "cost_usd": 0.0011118999999999999,
+      "tokens_in": 2848,
+      "tokens_out": 103,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "Where was Leo born?",
+      "expected": [
+        "birth_cert"
+      ],
+      "routed": [
+        "birth_cert"
+      ],
+      "found": true,
+      "answer": "Leo was born at Springfield General Hospital.",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1910,
+      "cost_usd": 0.0010625,
+      "tokens_in": 2825,
+      "tokens_out": 86,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "Until when is the car registration valid?",
+      "expected": [
+        "vehicle_reg"
+      ],
+      "routed": [
+        "vehicle_reg"
+      ],
+      "found": true,
+      "answer": "The car registration is valid through 05/31/2027.",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 1694,
+      "cost_usd": 0.0011125999999999998,
+      "tokens_in": 2842,
+      "tokens_out": 104,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "Is the fridge still under warranty in 2027?",
+      "expected": [
+        "warranty"
+      ],
+      "routed": [
+        "warranty"
+      ],
+      "found": true,
+      "answer": "Yes, the fridge is still under warranty in 2027, as the warranty expires on July 12, 2028.",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 10147,
+      "cost_usd": 0.0011053,
+      "tokens_in": 2851,
+      "tokens_out": 100,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "How much did the laptop cost?",
+      "expected": [
+        "receipt_laptop"
+      ],
+      "routed": [
+        "receipt_laptop"
+      ],
+      "found": true,
+      "answer": "The laptop cost $1,299.00.",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 3877,
+      "cost_usd": 0.0011142,
+      "tokens_in": 2864,
+      "tokens_out": 102,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "What is the return policy for the laptop?",
+      "expected": [
+        "receipt_laptop"
+      ],
+      "routed": [
+        "receipt_laptop"
+      ],
+      "found": true,
+      "answer": "The return policy is 30 days with receipt.",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 16175,
+      "cost_usd": 0.0010879,
+      "tokens_in": 2868,
+      "tokens_out": 91,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "When is the next car safety inspection due?",
+      "expected": [
+        "inspection"
+      ],
+      "routed": [
+        "inspection",
+        "vehicle_reg",
+        "auto_ins"
+      ],
+      "found": true,
+      "answer": "The next car safety inspection is due on March 31, 2027.",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 10963,
+      "cost_usd": 0.0011949,
+      "tokens_in": 3033,
+      "tokens_out": 114,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "Can I cancel the internet contract and how?",
+      "expected": [
+        "notice_only"
+      ],
+      "routed": [
+        "notice_only"
+      ],
+      "found": true,
+      "answer": "Yes, you can cancel the contract by giving 30 days notice.",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 6486,
+      "cost_usd": 0.0010869,
+      "tokens_in": 2823,
+      "tokens_out": 96,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "What documents do I have for the 2019 Honda Civic?",
+      "expected": [
+        "auto_ins",
+        "vehicle_reg"
+      ],
+      "routed": [
+        "vehicle_reg",
+        "auto_ins"
+      ],
+      "found": true,
+      "answer": "You have a vehicle registration card and an auto insurance declarations page for the 2019 Honda Civic.",
+      "citations": 2,
+      "dropped_citations": 0,
+      "latency_ms": 4931,
+      "cost_usd": 0.0012992,
+      "tokens_in": 2989,
+      "tokens_out": 161,
+      "router_recall": 1.0
+    },
+    {
+      "question": "What is the early termination fee for electricity?",
+      "expected": [
+        "power_contract"
+      ],
+      "routed": [
+        "power_contract",
+        "power_bill"
+      ],
+      "found": true,
+      "answer": "The early termination fee is $150.00.",
+      "citations": 1,
+      "dropped_citations": 0,
+      "latency_ms": 11693,
+      "cost_usd": 0.0011385,
+      "tokens_in": 2945,
+      "tokens_out": 102,
+      "router_recall": 1.0,
+      "answer_ok": true
+    },
+    {
+      "question": "What is my dentist's phone number?",
+      "expected": [],
+      "routed": [],
+      "found": false,
+      "answer": "I could not find this in your documents.",
+      "citations": 0,
+      "dropped_citations": 0,
+      "latency_ms": 839,
+      "cost_usd": 0.000812,
+      "tokens_in": 2615,
+      "tokens_out": 11,
+      "abstained": true
+    },
+    {
+      "question": "How much is my gym membership?",
+      "expected": [],
+      "routed": [],
+      "found": false,
+      "answer": "I could not find this in your documents.",
+      "citations": 0,
+      "dropped_citations": 0,
+      "latency_ms": 8121,
+      "cost_usd": 0.0008113999999999999,
+      "tokens_in": 2613,
+      "tokens_out": 11,
+      "abstained": true
+    },
+    {
+      "question": "What is the interest rate on my mortgage?",
+      "expected": [],
+      "routed": [],
+      "found": false,
+      "answer": "I could not find this in your documents.",
+      "citations": 0,
+      "dropped_citations": 0,
+      "latency_ms": 882,
+      "cost_usd": 0.000812,
+      "tokens_in": 2615,
+      "tokens_out": 11,
+      "abstained": true
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 from datetime import date
 
 from vault.ai.analyze import analyze_document
-from vault.ai.chat import NOT_FOUND, DocCard, answer_question
+from vault.ai.chat import NOT_FOUND, DocCard, Turn, answer_question
 from vault.ai.schemas import (
     ChatAnswer,
     Citation,
@@ -128,6 +128,64 @@ def test_chat_answer_without_verifiable_citation_is_not_found():
     assert not result.found
     assert result.answer == NOT_FOUND
     assert result.dropped_citations == 2
+
+
+def test_chat_sources_are_numbered_deduped_and_markers_renumbered():
+    llm = FakeLLMClient(
+        responses={
+            RouteDecision: RouteDecision(document_ids=["doc-1"]),
+            ChatAnswer: ChatAnswer(
+                found=True,
+                answer="Holder is SMITH [1]. It expires 12 AUG 2031 [2][3]. Renewal is free [4].",
+                citations=[
+                    Citation(document_id="doc-1", quote="Surname: SMITH"),
+                    Citation(document_id="doc-1", quote="made up quote"),
+                    Citation(document_id="doc-1", quote="Date of expiration 12 AUG 2031"),
+                    Citation(document_id="doc-1", quote="surname:   smith"),
+                ],
+            ),
+        }
+    )
+    result = answer_question(llm, "Passport?", _cards(), load_texts=lambda ids: {i: PASSPORT_TEXT for i in ids})
+    assert result.found
+    assert [(s.n, s.quote) for s in result.citations] == [(1, "Surname: SMITH"), (2, "Date of expiration 12 AUG 2031")]
+    assert result.citations[0].document_title == "US passport - John Smith"
+    assert result.citations[0].category == "passport"
+    assert result.answer == "Holder is SMITH [1]. It expires 12 AUG 2031 [2]. Renewal is free [1]."
+    assert result.dropped_citations == 1
+
+
+def test_chat_document_id_marker_maps_to_its_source():
+    llm = FakeLLMClient(
+        responses={
+            RouteDecision: RouteDecision(document_ids=["doc-1"]),
+            ChatAnswer: ChatAnswer(found=True, answer="It expires 12 AUG 2031 [doc-1] (see [page 1]).",
+                                   citations=[Citation(document_id="doc-1", quote="12 AUG 2031")]),
+        }
+    )
+    result = answer_question(llm, "When?", _cards(), load_texts=lambda ids: {i: PASSPORT_TEXT for i in ids})
+    assert result.answer == "It expires 12 AUG 2031 [1] (see [page 1])."
+
+
+def test_chat_follow_up_uses_standalone_question_and_previous_documents():
+    llm = FakeLLMClient(
+        responses={
+            RouteDecision: RouteDecision(standalone_question="When does John Smith's passport expire?",
+                                         document_ids=["doc-1"]),
+            ChatAnswer: ChatAnswer(found=True, answer="12 AUG 2031 [1]",
+                                   citations=[Citation(document_id="doc-1", quote="12 AUG 2031")]),
+        }
+    )
+    result = answer_question(
+        llm, "And when does it expire?", _cards(), load_texts=lambda ids: {i: PASSPORT_TEXT for i in ids},
+        history=[Turn("Whose passport is it?", "John Smith's [1]")], previous_document_ids=["doc-1", "doc-gone"],
+    )
+    router, answer = llm.calls
+    assert "Whose passport is it?" in router.prompt
+    assert 'Documents used in the previous answer: ["doc-1"]' in router.prompt
+    assert "Question: When does John Smith's passport expire?" in answer.prompt
+    assert "Question as asked: And when does it expire?" in answer.prompt
+    assert result.standalone_question == "When does John Smith's passport expire?"
 
 
 def test_mask_identifiers():

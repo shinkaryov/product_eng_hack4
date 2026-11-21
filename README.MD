@@ -42,4 +42,10 @@ Documents expose two statuses: `processing_stage` (worker: `PENDING`, `PROCESSIN
 
 Run tests with `uv run pytest`. Integration tests need the Compose Postgres. They create and migrate a separate `vault_test` database automatically, so the running stack and its data are not affected.
 
+## Evals
+
+`evals/cases.py` holds a labeled synthetic set: 28 documents (insurance, contracts, utilities, bank statements, tax forms, identity, vehicle, receipts, 5 blacklisted types, 4 image scans, a prompt-injection receipt, Czech and Ukrainian texts, documents without an expiration date) and 32 chat questions (3 of them not answerable from any document). `uv run python -m evals.run` runs the real pipeline against Gemini and writes [evals/results/latest.md](evals/results/latest.md) with metrics and every failure. `--reuse` reruns only the chat part on cached document results; `--rpm` paces calls for the free tier. `--set realistic` runs the photo set from [evals/realistic.py](evals/realistic.py) and writes `evals/results/realistic.md`: real receipt photos from the CORD v2 dataset (CC BY 4.0) plus phone-style photos generated with a Gemini image model (`python -m evals.generate_photos`, needs billing), each checked by a person before it counts.
+
+Metrics: classification accuracy, blacklist recall and false blocks, exact expiration date (and dates invented where none exist), key fact recall, facts dropped by the quote verifier, identifier leaks in summary cards, prompt-injection resistance, router recall@3, answer accuracy, abstention on unanswerable questions, cost and latency per document and per question.
+
 See [BACKEND_PLAN.md](BACKEND_PLAN.md) for the backend roadmap.

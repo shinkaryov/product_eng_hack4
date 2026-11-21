@@ -12,7 +12,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 
-from vault import saved
+from vault import local_auth
 from vault.ai.schemas import (
     ChatAnswer,
     Citation,
@@ -71,6 +71,7 @@ def api(tmp_path, monkeypatch):
     get_settings.cache_clear()
     from vault.main import app
 
+    local_auth.attempts.clear()  # many registrations per test run would hit the auth rate limit
     client = TestClient(app)
     login = {"email": f"{uuid.uuid4().hex}@example.test", "password": uuid.uuid4().hex}
     assert client.post("/v1/auth/register", json=login).status_code == 201
@@ -100,6 +101,13 @@ def _run_worker(llm) -> bool:
 
 def _stored_files(client):
     return [p for p in client.files_dir.iterdir() if p.is_file() and not p.name.startswith(".")]
+
+
+def _use_llm(monkeypatch, llm):
+    from vault.chat_messages import get_llm
+    from vault.main import app
+
+    monkeypatch.setitem(app.dependency_overrides, get_llm, lambda: llm)
 
 
 def _chat_llm(doc_id, response=None):
@@ -269,28 +277,30 @@ def test_chat_turns_respect_current_share_access(api, household, monkeypatch):
     path = f"/v1/chat/{chat_id}"
     question = {"message": "What is the deductible?"}
     llm = _chat_llm(doc_id)
-    monkeypatch.setattr(saved, "get_llm_client", lambda: llm)
+    _use_llm(monkeypatch, llm)
     assert api.post(path + "/messages", json=question).status_code == 404
     assert viewer.post(path + "/messages", json={"message": "   "}).status_code == 422
 
     def unavailable(_call):
         raise LLMUnavailable("provider down")
 
-    monkeypatch.setattr(saved, "get_llm_client", lambda: _chat_llm(doc_id, response=unavailable))
+    _use_llm(monkeypatch, _chat_llm(doc_id, response=unavailable))
     assert viewer.post(path + "/messages", json=question).status_code == 503
-    monkeypatch.setattr(saved, "get_llm_client", lambda: llm)
+    _use_llm(monkeypatch, llm)
     result = viewer.post(path + "/messages", json=question)
     assert result.status_code == 201, result.text
-    turn = result.json()
+    turn = {k: v for k, v in result.json().items() if k not in ("standalone_question", "usage")}  # response-only
     assert (turn["turn_number"], turn["answer_status"], turn["source_revision"]) == (1, "ANSWERED", 1)
-    assert turn["citations"] == [{"document_id": doc_id, "quote": "Collision deductible: $500.00"}]
+    assert [(c["n"], c["document_id"], c["quote"]) for c in turn["citations"]] == [
+        (1, doc_id, "Collision deductible: $500.00")
+    ]
     assert viewer.get(path).json()["turns"] == [turn]
 
     def revoke_during_inference(_call):
         assert api.delete(doc_path + "/shares").status_code == 204
         return llm.responses[ChatAnswer]
 
-    monkeypatch.setattr(saved, "get_llm_client", lambda: _chat_llm(doc_id, response=revoke_during_inference))
+    _use_llm(monkeypatch, _chat_llm(doc_id, response=revoke_during_inference))
     assert viewer.post(path + "/messages", json=question).status_code == 404
     assert viewer.get(path).status_code == 404
     assert api.post(doc_path + "/shares", json={"family_id": family_id}).status_code == 200
@@ -301,7 +311,7 @@ def test_chat_turns_respect_current_share_access(api, household, monkeypatch):
         assert _run_worker(_insurance_llm())
         return llm.responses[ChatAnswer]
 
-    monkeypatch.setattr(saved, "get_llm_client", lambda: _chat_llm(doc_id, response=republish_during_inference))
+    _use_llm(monkeypatch, _chat_llm(doc_id, response=republish_during_inference))
     assert viewer.post(path + "/messages", json=question).status_code == 409
     assert viewer.get(path).json()["turns"] == [turn]
 
@@ -314,7 +324,7 @@ def test_reprocessing_as_blocked_purges_published_data(api, monkeypatch):
     assert api.post(path + "/deadlines", json={"type": "OTHER", "date": due}).status_code == 201
     assert api.get("/v1/reminders").json()
     chat_id = api.post(path + "/chat").json()["id"]
-    monkeypatch.setattr(saved, "get_llm_client", lambda: _chat_llm(doc_id))
+    _use_llm(monkeypatch, _chat_llm(doc_id))
     assert api.post(f"/v1/chat/{chat_id}/messages", json={"message": "Deductible?"}).status_code == 201
 
     assert api.post(path + "/reprocess").status_code == 202
@@ -362,3 +372,19 @@ def test_delete_cleans_up_file(api):
     with SessionLocal() as s:
         processing.cleanup_files(s)
     assert _stored_files(api) == []
+
+
+def test_iphone_heic_photo_is_accepted_and_sent_to_gemini(api):
+    heic = b"\x00\x00\x00\x18ftypheic\x00\x00\x00\x00mif1heic" + b"\x00" * 32
+    # Browsers often send HEIC without a specific media type; the signature decides.
+    doc_id = _upload(api, "IMG_0042.HEIC", heic, "application/octet-stream")
+    assert api.get(f"/v1/documents/{doc_id}").json()["media_type"] == "image/heic"
+
+    llm = _insurance_llm()
+    _run_worker(llm)
+    assert llm.calls[0].attachments[0].mime_type == "image/heic"
+
+    heif = b"\x00\x00\x00\x18ftypmif1\x00\x00\x00\x00mif1" + b"\x00" * 32
+    assert api.get(f"/v1/documents/{_upload(api, 'scan.heif', heif, 'image/heif')}").json()["media_type"] == "image/heif"
+    r = api.post("/v1/documents", files={"file": ("fake.heic", b"\xff\xd8\xff" + b"\x00" * 40, "image/heic")})
+    assert r.status_code == 415

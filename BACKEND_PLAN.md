@@ -4,7 +4,7 @@ Use one FastAPI application, one asynchronous document worker from the same Pyth
 
 ## A. Current state (2026-11-21)
 
-Branch `back`. Implemented: Compose stack (API, worker, migrations, Postgres), schema migrations `0001`–`0004`, local accounts with JWT and refresh tokens, families and invitations, explicit sharing, document upload/list/get/patch/delete/download/reprocess, extraction read and owner corrections, deadlines and reminders, chat session records, the provider-agnostic LLM layer with a Gemini adapter and a fake client, and the worker's Gemini pipeline (classify → policy → extract → publish). Not yet implemented: chat message endpoint (router + answer), owner confirmation endpoint (`REVIEW_REQUIRED` → `READY`), and evals.
+Branch `back`. Implemented: Compose stack (API, worker, migrations, Postgres), schema migrations `0001`–`0004`, local accounts with JWT and refresh tokens, families and invitations, explicit sharing, document upload/list/get/patch/delete/download/reprocess, extraction read and owner corrections, deadlines and reminders, chat session records, the provider-agnostic LLM layer with a Gemini adapter and a fake client, and the worker's Gemini pipeline (classify → policy → extract → publish). Also implemented: chat messages (card routing + grounded answers) and the eval suite in `evals/`. Not yet implemented: owner confirmation endpoint (`REVIEW_REQUIRED` → `READY`).
 
 ## B. Proposed architecture
 
@@ -24,7 +24,7 @@ Use synthetic documents for the hackathon demo. Verify the actual Gemini project
 
 ### Upload and processing
 
-1. **Validate and store.** The API reads at most `MAX_UPLOAD_MB` (20 MiB), requires a matching extension, declared media type and file signature (PDF, JPEG, PNG), and rejects encrypted PDFs. No local parsing. It writes the file under a random UUID storage key and, in one transaction, inserts the document, file metadata (sanitized display filename, SHA-256), a `PENDING` processing job and an `UPLOADED` event. The response is `202`; clients poll `GET /v1/documents/{id}`.
+1. **Validate and store.** The API reads at most `MAX_UPLOAD_MB` (20 MiB), requires a matching extension, declared media type and file signature (PDF, JPEG, PNG, and iPhone HEIC/HEIF photos, accepted by their `ftyp` brand even when the browser sends no specific media type), and rejects encrypted PDFs. No local parsing. It writes the file under a random UUID storage key and, in one transaction, inserts the document, file metadata (sanitized display filename, SHA-256), a `PENDING` processing job and an `UPLOADED` event. The response is `202`; clients poll `GET /v1/documents/{id}`.
 2. **Claim work durably.** One `processing_jobs` row per document. The worker claims a ready or lease-expired row with `FOR UPDATE SKIP LOCKED`, sets `PROCESSING` with an attempt token and a 5-minute lease, and commits before any model call. Only the attempt that still holds the token can publish. [PostgreSQL locking clauses](https://www.postgresql.org/docs/current/sql-select.html)
 3. **Classify (router model).** Gemini reads the file and returns `doc_type`, confidence and a reason (`vault.ai.schemas.Classification`). The model only classifies; `vault.ai.policy` decides. Blacklisted types (military or federal ID, naturalization certificate, biometric or genetic data, credentials, bank card or blank check) become `BLOCKED`: no extraction call, the file record is removed and the bytes are queued in `file_cleanup_jobs`. The document stays visible to its owner with the reason. Identity documents such as passports and driver's licenses are allowed.
 4. **Extract (main model).** Gemini reads the file again and returns the full text, identifiers, contract terms, money amounts, an expiration date with its quote, and a summary card (title, holder, issuer, key facts, topics). The card is redacted (no identifiers, dates of birth or addresses).
@@ -137,10 +137,11 @@ Use `/v1`, bearer access tokens, and cursor pagination where collections can gro
 
 | Method and path | Request → response | Access and additional errors |
 |---|---|---|
+| `POST /chat` | `ChatSessionCreate(title?)` → `201 ChatSession` | Implemented. Session over all documents the caller can read (`document_id` null). `GET /chat` lists them. |
 | `POST /documents/{id}/chat` | `ChatSessionCreate(title?)` → `201 ChatSession` | Implemented. Owner/viewer of an allowed, processed document. Session belongs to caller. |
 | `GET /documents/{id}/chat` | → `200 ChatSession[]` | Implemented. Lists only caller-owned sessions for that document. |
 | `GET /chat/{id}` | → `200 ChatHistory` | Implemented. Session owner with current access. `404` inaccessible. |
-| `POST /chat/{id}/messages` | `ChatMessage(message)` → `201 ChatTurn` | Planned. Routes by summary cards, answers from routed documents' text. `409` concurrent turn, `503` provider unavailable. Missing evidence returns `INSUFFICIENT_INFORMATION`. |
+| `POST /chat/{id}/messages` | `ChatMessage(message)` → `201 ChatTurn` | Implemented. Routes by summary cards (all readable documents, or the session's document), answers from routed documents' text with the last 3 turns as context. No transaction is held during the model call; access is rechecked before saving. `409` no processed documents, concurrent turn or documents changed, `502` invalid model output, `503` provider unavailable. Unverifiable answers return `INSUFFICIENT_INFORMATION`. |
 | `DELETE /chat/{id}` | Empty → `204` | Implemented. Session owner. |
 
 A citation contains document ID and a validated excerpt. `ChatTurn` contains the message, answer status, answer text, citations, and routed document IDs. Summary search with embeddings (`POST /search`) was dropped in favor of card routing.
@@ -151,13 +152,14 @@ A citation contains document ID and a validated excerpt. `ChatTurn` contains the
 |---|---|
 | `pyproject.toml`, `Dockerfile`, `compose.yaml`, `.env.example`, `README.MD` | Runtime and dependency configuration, local services, configuration keys without secrets, setup instructions. |
 | `src/vault/main.py` | App setup, routers, CORS, error mapping, health check. |
-| `src/vault/local_auth.py`, `families.py`, `documents.py`, `saved.py` | API routers: accounts and tokens; families and invitations; documents, files, extraction, sharing; deadlines, reminders and chat sessions. |
+| `src/vault/local_auth.py`, `families.py`, `documents.py`, `saved.py`, `chat_messages.py` | API routers: accounts and tokens; families and invitations; documents, files, extraction, sharing; deadlines, reminders and chat sessions; chat messages. |
+| `evals/` | Labeled synthetic eval set, runner, latest results. |
 | `src/vault/llm/` | Provider-agnostic LLM interface (`LLMClient`, model roles, usage), Gemini adapter, fake client, factory. |
 | `src/vault/ai/` | Prompts, structured-output schemas, document policy, analysis pipeline with fact verification, card redaction, chat routing and answering. No database access. |
 | `src/vault/services/processing.py` | Worker job logic: claim, analyze, publish, retries, file cleanup. |
 | `src/vault/services/documents.py` | Replace a document's original file and reset derived data. |
 | `src/vault/processing/worker.py` | Worker loop. |
-| `migrations/` | Alembic revisions `0001`–`0004`. |
+| `migrations/` | Alembic revisions `0001`–`0005` (`0005` allows HEIC/HEIF originals). |
 | `tests/unit/`, `tests/integration/` | AI pipeline unit tests with the fake client; API and worker integration tests on a separate `vault_test` database created by `tests/conftest.py`; a live two-user lifecycle test against the running stack. |
 
 ## F. Roadmap status
@@ -169,8 +171,8 @@ A citation contains document ID and a validated excerpt. `ChatTurn` contains the
 | Gemini screening, extraction, verification, publication | Done (worker). Owner confirmation endpoint pending. |
 | Deadlines and reminders | Done (API). Worker proposes deadlines from expiration dates. |
 | Families and explicit sharing | Done. |
-| Chat: card routing and answers | `vault.ai.chat` done; message endpoint pending. |
-| Evals | Pending: classification accuracy, fact verification drop rate, router recall, answer grounding on synthetic documents. |
+| Chat: card routing and answers | Done (`vault.ai.chat`, `vault.chat_messages`). |
+| Evals | Done: `evals/` (24 synthetic documents, 28 questions), results in `evals/results/latest.md`. |
 | Demo hardening | Pending: synthetic fixtures, live Gemini smoke run from a fresh database. |
 
 ## G. Trade-offs and decisions

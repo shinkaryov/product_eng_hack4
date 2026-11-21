@@ -31,17 +31,15 @@ Nov 21, 2026 · @Vitalii
 
 ## Авторизація й акаунт
 
-Вхід за email і паролем із JWT працює. Але обов'язкового email OTP з PRD (FR-01) і дизайну (`OtpInput`) у бекенді немає, а в користувача немає імені — лише email.
+Вхід за email і паролем із JWT працює. Email OTP з PRD (FR-01) і дизайну (`OtpInput`) свідомо вирізано з MVP: екран OTP у застосунку не потрібен. У користувача немає імені — лише email.
 
 | Ендпоінт | Статус | Запит → відповідь | Помилки |
 | --- | --- | --- | --- |
 | `POST /auth/register` | Є | `{email, password, timezone?}` → `201 User`. Пароль 15–256 символів, `timezone` — IANA, за замовчуванням `UTC`. Вхід не виконує: далі потрібен `login` | `409` Email unavailable, `422` Unknown timezone, `429` |
-| `POST /auth/login` | Частково | `{email, password}` → `200 TokenPair`. Одразу видає токени, без OTP | `401` Invalid credentials, `429` |
+| `POST /auth/login` | Є | `{email, password}` → `200 TokenPair`. Одразу видає токени | `401` Invalid credentials, `429` |
 | `POST /auth/refresh` | Є | `{refresh_token}` → `200 TokenPair` (нова пара, старий refresh більше не діє) | `401` Invalid session. Повторне використання старого refresh відкликає всю сесію |
 | `POST /auth/logout` | Є | — → `204` | — |
 | `GET /users/me` | Є | — → `200 User` | — |
-| `POST /auth/otp/verify` | Нове | `{challenge_id, code}` → `200 TokenPair` | `401` невірний код, `410` код прострочено, `429` |
-| `POST /auth/otp/resend` | Нове | `{challenge_id}` → `202 {resend_after_s}` | `429` |
 | `PATCH /users/me` | Нове | `{display_name?, timezone?}` → `200 User` | `422` |
 
 ```json
@@ -52,12 +50,7 @@ Nov 21, 2026 · @Vitalii
 { "access_token": "eyJhbGciOi…", "refresh_token": "q8Zk…", "token_type": "bearer" }
 ```
 
-**Пропозиція OTP (Нове).** Якщо пароль вірний, `login` повертає не токени, а виклик на другий крок. Код — 6 цифр, діє 10 хв, одноразовий, після 5 хибних спроб — `429`. Для демо без пошти: змінна `OTP_DEV_CODE` або код у логах API.
-
 ```json
-// POST /auth/login → 202 (пропозиція)
-{ "otp_required": true, "challenge_id": "c2a9…", "sent_to": "l••••@gmail.com", "resend_after_s": 60 }
-
 // User (пропозиція) — додати display_name
 { "id": "6f1c…", "email": "laura@example.com", "display_name": "Laura Reynolds", "timezone": "America/Chicago" }
 ```
@@ -195,7 +188,7 @@ Nov 21, 2026 · @Vitalii
 
 `kind`: `CONTRACT_EXPIRATION`, `CANCELLATION`, `INSURANCE_EXPIRATION`, `WARRANTY_EXPIRATION`, `PAYMENT_DUE`, `DOCUMENT_EXPIRATION`, `OTHER`. Надсилання нагадувань email чи push у бекенді немає: це лише записи, які застосунок читає з `GET /reminders?state=DUE`.
 
-Для `UTILITY_BILL` воркер публікує `PAYMENT_DUE` зі станом `PROPOSED` за явно зазначеною датою оплати. В `Extraction.facts` доступні `payment_due_on` і `payment_due_on_quote`. Для інших типів воркер використовує `expires_on`. Якщо дати немає, власник може додати її вручну.
+Для `UTILITY_BILL`, `BANK_STATEMENT` (кредитка) і `TAX_DOCUMENT` (податковий рахунок) воркер публікує `PAYMENT_DUE` зі станом `PROPOSED` за явно зазначеною датою оплати. В `Extraction.facts` доступні `payment_due_on` і `payment_due_on_quote`. Для інших типів воркер використовує `expires_on`. Якщо дати немає, власник може додати її вручну.
 
 **Похідний дедлайн (Нове).** Екран Confirm deadline показує пункт договору, розрахунок і результат (*Jan 31, 2027 − 30 days = Jan 1, 2027*). `notice_period` залишається в `terms`. Пропозиція: воркер детерміновано рахує другий кандидат `candidate_key: "notice_deadline"` з `kind: CANCELLATION` і розширеним `evidence`. Якщо термін не розбирається, клієнт пропонує ввести дату вручну.
 
@@ -275,7 +268,7 @@ Nov 21, 2026 · @Vitalii
 
 ## Чат Ask
 
-Чат працює в межах одного документа. Клієнт створює сесію через `POST /documents/{id}/chat` і надсилає запитання через `POST /chat/{id}/messages`. Для загального екрана Ask потрібна сесія без `document_id`.
+Сесія буває двох видів: по одному документу (`POST /documents/{id}/chat`) і по всьому сховищу (`POST /chat`, `document_id: null`; роутер обирає до 3 документів за картками). Запитання надсилаються через `POST /chat/{id}/messages`. Уточнення («а коли він закінчується?») враховують 3 останні репліки. У тексті відповіді стоять маркери `[n]`, що відповідають `citations[].n`.
 
 | Ендпоінт | Статус | Запит → відповідь | Помилки та нюанси |
 | --- | --- | --- | --- |
@@ -283,12 +276,12 @@ Nov 21, 2026 · @Vitalii
 | `GET /documents/{id}/chat` | Є | → `200 ChatSession[]` | Лише власні сесії |
 | `GET /chat/{id}` | Є | → `200 ChatSession + turns[]` | `404` якщо доступ до документа відкликано |
 | `DELETE /chat/{id}` | Є | → `204` | — |
-| `POST /chat` | Нове | `{title?}` → `201 ChatSession` з `document_id: null` | Сесія по всіх доступних документах |
-| `GET /chat` | Нове | → `200 ChatSession[]` | Історія для Ask |
-| `POST /chat/{id}/messages` | Є | `{message}` → `201 ChatTurn`. Один запит на одне запитання, до 4000 символів | `404` сесія або документ недоступні, `409` змінився документ чи версія чату, `503` модель недоступна |
+| `POST /chat` | Є | `{title?}` → `201 ChatSession` з `document_id: null` | Сесія по всіх доступних документах |
+| `GET /chat` | Є | → `200 ChatSession[]` | Історія для Ask |
+| `POST /chat/{id}/messages` | Є | `{message}` → `201 ChatTurn`. Один запит на одне запитання, до 4000 символів | `404` сесія або документ недоступні, `409` змінився документ чи версія чату, `409` немає оброблених документів, `503` модель недоступна. У відповіді також `standalone_question` і `usage` (не зберігаються) |
 
 ```json
-// ChatSession (зараз)
+// ChatSession: document_id = null для сесії по всьому сховищу (POST /chat)
 { "id": "c71e…", "owner_id": "6f1c…", "document_id": "88b3…", "title": null, "turn_version": 2,
   "created_at": "2026-11-21T14:10:00Z", "updated_at": "2026-11-21T14:11:30Z" }
 
@@ -297,8 +290,9 @@ Nov 21, 2026 · @Vitalii
   "id": "t09a…", "session_id": "c71e…", "turn_number": 1,
   "question": "When does my car insurance expire?",
   "answer_status": "ANSWERED",
-  "answer": "Your Geico auto policy ends on Jan 18, 2027.",
-  "citations": [{ "document_id": "88b3…", "quote": "Policy period: 07/18/2026 to 01/18/2027" }],
+  "answer": "Your Geico auto policy ends on Jan 18, 2027 [1].",
+  "citations": [{ "n": 1, "document_id": "88b3…", "document_title": "Geico auto policy", "category": "auto_insurance",
+                  "quote": "Policy period: 07/18/2026 to 01/18/2027" }],
   "routed_document_ids": ["88b3…"], "source_revision": 1, "created_at": "2026-11-21T14:10:04Z"
 }
 ```
@@ -308,7 +302,14 @@ Nov 21, 2026 · @Vitalii
 | `ANSWERED` | Текст відповіді + чипи джерел із `citations` (тап відкриває документ) |
 | `INSUFFICIENT_INFORMATION` | Нейтральний notice: *I couldn’t find this in your documents* + підказка, що додати |
 
-Зараз цитата містить лише `document_id` і `quote`. Щоб чип *Auto policy, Geico* не потребував окремих запитів, пропоную додати `document_title`. `page` поки мало що дасть: весь текст лежить як сторінка 1, тож номер сторінки в чипі не показуємо.
+**Джерела.** Кожна цитата перевірена бекендом: `quote` дослівно (без урахування регістру й пробілів) є в тексті документа `document_id`. Неперевірені цитати відкидаються, їхні маркери прибираються з тексту, решта перенумеровується `1..N` без пропусків. Однакові цитати зливаються в одне джерело. Якщо після перевірки не лишилось жодної цитати, хід стає `INSUFFICIENT_INFORMATION` з порожнім `citations`.
+
+- `n` — номер джерела; у `answer` йому відповідає маркер `[n]` (може бути кілька поспіль: `[1][2]`).
+- `document_title` — назва з картки документа, `category` — AI-тип у нижньому регістрі (`auto_insurance`, `passport`…). Чип: `document_title`, тап відкриває `GET /documents/{document_id}`.
+- `page` немає: весь текст лежить як одна сторінка.
+- Ходи, збережені до 21.11 ~16:30, мають у `citations` лише `document_id` і `quote`: клієнт нумерує їх за порядком і бере назву з `GET /documents/{id}`.
+
+**Як рендерити.** Замінити `[n]` в `answer` на маленький superscript-чип, що підсвічує або відкриває джерело `n`; під відповіддю — список джерел з `document_title` і цитатою. `standalone_question` показувати не треба: це переписане роутером запитання («а коли він закінчується?» → «When does my auto policy expire?»), корисне для дебагу. Запит синхронний, 2–8 с: на час очікування — індикатор набору, кнопка надсилання вимкнена (паралельний хід у тій самій сесії отримає `409`).
 
 ## Перевірка паспорта для авіаквитка (stretch)
 
@@ -342,36 +343,35 @@ Nov 21, 2026 · @Vitalii
 
 ## Екрани → ендпоінти
 
-Демо з даними з бекенду покриває завантаження, перевірку документа, підтвердження дедлайну та чат у межах документа.
+Демо з даними з бекенду покриває вхід, завантаження, перевірку документа, підтвердження дедлайну та чат — по документу і по всьому сховищу.
 
 | Екран | Виклики | Готовність |
 | --- | --- | --- |
-| Sign up / Log in | `POST /auth/register`, `POST /auth/login`, `GET /users/me`; OTP — `POST /auth/otp/verify` (Нове) | Частково |
+| Sign up / Log in | `POST /auth/register`, `POST /auth/login`, `GET /users/me` (без OTP) | Є |
 | Home | `GET /families/me`; `GET /deadlines` для статусу й hero; `GET /documents?scope=all` — *Waiting for your review* (фільтр `REVIEW_REQUIRED` на клієнті) і лічильники на плитках; *Mark as done* — `PATCH …/deadlines/{id}` зі `state: DONE` (Нове) | Частково |
 | Add (Scan, Upload) | `POST /documents` (камера дає JPG або PDF), далі опитування `GET /documents/{id}` | Є |
 | Review details | `GET /documents/{id}`, `GET /documents/{id}/extraction`, `PATCH /documents/{id}/extraction`, *Change* категорії — `PATCH /documents/{id}`; *Confirm details* — `POST /documents/{id}/confirm` | Є |
 | Confirm deadline | `GET /documents/{id}/deadlines?state=PROPOSED`, `PATCH …/deadlines/{id}` зі `state: CONFIRMED` або новою `date`; розрахунок і `reminder_offsets` (Нове) | Частково |
 | Document | `GET /documents/{id}`, `/extraction`, `/deadlines`, `/file`; `DELETE`; *Retry* — `POST /reprocess`; *Replace* — `PUT /documents/{id}/file` (Нове) | Є |
 | Share | *Household* — `POST`/`GET`/`DELETE /documents/{id}/shares`; *A person*, *Link that expires*, *Hide sensitive details* (Нове) | Частково |
-| Ask | `POST /documents/{id}/chat`, `POST /chat/{id}/messages`, `GET /chat/{id}`. Сесія для всього сховища — `POST /chat` (Нове) | Частково |
+| Ask | Сесія для всього сховища — `POST /chat`, для документа — `POST /documents/{id}/chat`; `POST /chat/{id}/messages`, `GET /chat/{id}`, історія — `GET /chat` | Є |
 | Flight added | `POST /documents` + `POST /documents/{id}/travel-check` (Нове) | Не працює |
 | Household | `GET /families/me`, `GET /families/{id}/members`, `POST /families/invitations`; код, запити на вступ і рівні доступу (Нове) | Частково |
 | Vault (у прототипі немає) | `GET /documents?scope=all`, групування в плитки на клієнті; пошук `q` (Нове) | Частково |
 
 ## Що доробити на бекенді
 
-Підтвердження документа, список дедлайнів власника й чат у межах документа вже доступні. Для демо використовується вхід за email і паролем.
+Підтвердження документа, список дедлайнів власника й чат (по документу і по всьому сховищу) вже доступні. Вхід — за email і паролем, email OTP вирізано з MVP.
 
 ### P1 — те, що показує прототип
 
-- [ ] `POST /chat` для Ask по всьому сховищу та стан `DONE` для *Mark as done*, якщо ці дії потрібні в інтерфейсі
+- [ ] Стан `DONE` для *Mark as done*, якщо він потрібен в інтерфейсі
 - [ ] Нагадування за 30, 7 і 1 день і `reminder_offsets` на дедлайні (зараз 7 і 1, FR-05)
 - [ ] Похідний дедлайн `CANCELLATION` із `notice_period` і `evidence.base`/`offset_days` (екран Confirm deadline)
 - [ ] Посилання з терміном дії 1h / 24h / 7d і приховування даних (FR-08, FR-09)
 - [ ] `display_name` у `User` і списку учасників
 - [ ] `GET /documents`: `q`, `review_status`, сортування за `created_at` (FR-06)
 - [ ] Машинний `code` у тілі помилки
-- [ ] `document_title` у цитатах чату
 
 ### P2 — після демо або за наявності часу
 

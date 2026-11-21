@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
-from vault import documents, families, local_auth, saved
+from vault import chat_messages, documents, families, local_auth, saved
 from vault.config import get_settings
 from vault.db import engine
 
@@ -27,7 +27,7 @@ def health() -> JSONResponse:
     return JSONResponse({"status": "ok", "db": "up"})
 
 
-for module in (local_auth, families, documents, saved):
+for module in (local_auth, families, documents, saved, chat_messages):
     app.include_router(module.router)
 
 
