@@ -1,0 +1,14 @@
+analyzer:
+  errors:
+    # Flutter 3.47 deprecated package:flutter/material.dart in favour of material_ui.
+    deprecated_member_use: ignore
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    prefer_const_constructors: true
+    prefer_final_locals: true
